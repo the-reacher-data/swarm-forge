@@ -123,7 +123,9 @@ def test_failed_gate_bounds_feedback_and_keeps_full_log(tmp_path: Path) -> None:
     assert "ruff failure" not in json.dumps(recorded[0])
 
 
-def test_gate_config_failure_is_recorded_without_changing_stderr(tmp_path: Path) -> None:
+def test_gate_config_failure_is_recorded_without_changing_stderr(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "pyproject.toml").write_text(
         "[project]\nname = 'sample'\nversion = '0.1.0'\n"
     )
