@@ -2,7 +2,11 @@
 
 (ns ready-for-next-task
   (:require [babashka.fs :as fs]
+            [babashka.process :as process]
             [clojure.string :as str]))
+
+(def script-dir (fs/parent *file*))
+(def telemetry-script (fs/path (fs/parent script-dir) "telemetry" "metrics.py"))
 
 (defn state-dir []
   (fs/path (System/getProperty "user.dir") ".swarmforge" "handoffs"))
@@ -87,6 +91,15 @@
       (println line)))
   (System/exit status))
 
+(defn record-telemetry! [& args]
+  (try
+    (apply process/sh
+           (concat [{:continue true}]
+                   ["python3" (str telemetry-script) "record"
+                    "--root" (System/getProperty "user.dir")]
+                   args))
+    (catch Exception _ nil)))
+
 (defn -main []
   (let [inbox (inbox-dir)
         new-dir (fs/path inbox "new")
@@ -115,6 +128,10 @@
                 (fail! 2 (str "AMBIGUOUS_TASK_STATE: target in-process file already exists: " target-file)))
               (fs/move source-file target-file)
               (set-header! target-file "dequeued_at" (timestamp))
+              (record-telemetry! "--event" "task_accepted"
+                                 "--id" (header-value target-file "task"
+                                                      (header-value target-file "id" "unknown"))
+                                 "--result" "accepted")
               (print-task target-file))))))))
 
 (-main)

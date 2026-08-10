@@ -90,6 +90,33 @@
       (finally
         (fs/delete-tree root)))))
 
+(deftest ready-helper-records-telemetry-without-extra-output
+  (let [root (tmp-dir)
+        queued (fs/path root ".swarmforge/handoffs/inbox/new/task.handoff")]
+    (try
+      (init-repo! root)
+      (write-file (fs/path root ".swarmforge/roles.tsv")
+                  (str "receiver\tmaster\t" root
+                       "\tsession\tReceiver\tcodex-primary\ttask\teager\n"))
+      (write-file queued
+                  (str "id: handoff-1\n"
+                       "from: sender\n"
+                       "to: receiver\n"
+                       "priority: 50\n"
+                       "type: git_handoff\n"
+                       "task: task-alpha\n\n"
+                       "payload\n"))
+      (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "receiver"}}
+                        (script "ready_for_next_task.sh"))
+            lines (str/split-lines
+                   (slurp (str (fs/path root ".swarmforge/metrics/events.jsonl"))))]
+        (is (= "" (:err result)))
+        (is (= 1 (count lines)))
+        (is (str/includes? (first lines) "\"event\":\"task_accepted\""))
+        (is (str/includes? (first lines) "\"backend_instance\":\"codex-primary\"")))
+      (finally
+        (fs/delete-tree root)))))
+
 (deftest swarmforge-launcher-parses-config-and-writes-state-files
   (let [root (tmp-dir)]
     (try
