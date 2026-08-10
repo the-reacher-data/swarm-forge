@@ -64,7 +64,12 @@ def _telemetry_dir(root: Path) -> Path | None:
             return None
         if not enabled:
             return None
-        return root / directory
+        target = root / directory
+        # Confine writes beneath the project root: reject absolute `dir`,
+        # `..` traversal, and symlink escapes visible at resolution time.
+        if not target.resolve().is_relative_to(root.resolve()):
+            return None
+        return target
     except (OSError, tomllib.TOMLDecodeError, TypeError, ValueError):
         return None
 
@@ -141,9 +146,7 @@ def record_event(
             "duration_ms": _optional_integer(duration_ms),
             "handoff_count": _optional_integer(handoff_count),
             "gate_failure_count": _optional_integer(gate_failure_count),
-            "tool_output_bytes_exposed": _optional_integer(
-                tool_output_bytes_exposed
-            ),
+            "tool_output_bytes_exposed": _optional_integer(tool_output_bytes_exposed),
             "tokens": {"input": None, "output": None, "cache_read": None},
         }
         if gate_mode is not None:

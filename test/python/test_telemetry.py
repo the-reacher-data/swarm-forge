@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -99,6 +98,35 @@ def test_disabled_and_invalid_configuration_do_not_create_metrics(
         tmp_path, event="task_accepted", id="task", result="accepted"
     )
     assert not (tmp_path / ".swarmforge/metrics").exists()
+
+
+def test_escaping_telemetry_dir_disables_recording(tmp_path: Path) -> None:
+    metrics = load_metrics()
+    root = tmp_path / "project"
+    outside = tmp_path / "outside"
+    (root / "swarmforge").mkdir(parents=True)
+    for directory in (str(outside), "../outside", "sub/../../outside"):
+        (root / "swarmforge/python-gates.toml").write_text(
+            f'[telemetry]\ndir = "{directory}"\n'
+        )
+        assert not metrics.record_event(
+            root, event="task_accepted", id="task", result="accepted"
+        )
+    assert not outside.exists()
+    assert not (root / ".swarmforge/metrics").exists()
+
+
+def test_valid_relative_dir_still_records(tmp_path: Path) -> None:
+    metrics = load_metrics()
+    (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge/python-gates.toml").write_text(
+        "[telemetry]\ndir = 'metrics/sub'\n"
+    )
+    assert metrics.record_event(
+        tmp_path, event="task_accepted", id="task", result="accepted"
+    )
+    line = (tmp_path / "metrics/sub/events.jsonl").read_text().strip()
+    assert json.loads(line)["id"] == "task"
 
 
 def test_cli_caps_strings_and_concurrent_appends_are_complete(tmp_path: Path) -> None:
