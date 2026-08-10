@@ -249,6 +249,9 @@ def record_gate_event(
     result: str,
     started_at: float,
     tool_output_bytes_exposed: int,
+    test_selection: str | None = None,
+    test_selection_reason: str | None = None,
+    affected_test_count: int | None = None,
 ) -> None:
     duration_ms = int((time.monotonic() - started_at) * 1_000)
     try:
@@ -266,6 +269,9 @@ def record_gate_event(
             gate_failure_count=0 if result == "pass" else 1,
             tool_output_bytes_exposed=tool_output_bytes_exposed,
             gate_mode=mode,
+            test_selection=test_selection,
+            test_selection_reason=test_selection_reason,
+            affected_test_count=affected_test_count,
         )
     except Exception:
         pass
@@ -345,6 +351,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     mode = args.mode
     started_at = time.monotonic()
+    test_selection = None
+    test_selection_reason = None
+    affected_test_count = None
     try:
         config = load_config(root)
         max_bytes = integer_setting(
@@ -367,14 +376,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     changed_files = changed_python_files(root) if mode == "fast" else []
     if configured is None and ["pytest", "-q"] in commands:
-        selected_tests, _selection_reason = affected_tests(
+        selected_tests, test_selection_reason = affected_tests(
             root, config, changed_python_files(root)
         )
         if selected_tests is not None:
+            test_selection = "affected"
+            affected_test_count = len(selected_tests)
             commands = [
                 [*command, *selected_tests] if command == ["pytest", "-q"] else command
                 for command in commands
             ]
+        else:
+            test_selection = "full"
     exit_code, result, exposed_bytes = run_commands(
         root,
         mode,
@@ -389,6 +402,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         result=result,
         started_at=started_at,
         tool_output_bytes_exposed=exposed_bytes,
+        test_selection=test_selection,
+        test_selection_reason=test_selection_reason,
+        affected_test_count=affected_test_count,
     )
     return exit_code
 

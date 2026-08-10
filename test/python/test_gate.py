@@ -273,21 +273,26 @@ def test_gate_runs_only_codegraph_affected_tests(tmp_path: Path) -> None:
         f"affected --json --stdin -p {tmp_path}"
     )
     assert stdin_log.read_text().splitlines() == ["src/app.py"]
+    recorded = telemetry_events(tmp_path)
+    assert recorded[0]["test_selection"] == "affected"
+    assert recorded[0]["test_selection_reason"] == "ok"
+    assert recorded[0]["affected_test_count"] == 2
+    assert "test_app.py" not in json.dumps(recorded[0])
 
 
 @pytest.mark.parametrize(
-    ("output", "exit_code"),
+    ("output", "exit_code", "reason"),
     [
-        ("not-json", "0"),
-        (json.dumps({"test": "test/test_app.py"}), "0"),
-        (json.dumps([]), "0"),
-        (json.dumps(["test/missing.py"]), "0"),
-        (json.dumps(["src/app.py"]), "0"),
-        (json.dumps(["test/test_app.py"]), "7"),
+        ("not-json", "0", "invalid_output"),
+        (json.dumps({"test": "test/test_app.py"}), "0", "invalid_output"),
+        (json.dumps([]), "0", "no_tests"),
+        (json.dumps(["test/missing.py"]), "0", "invalid_output"),
+        (json.dumps(["src/app.py"]), "0", "invalid_output"),
+        (json.dumps(["test/test_app.py"]), "7", "error"),
     ],
 )
 def test_affected_selection_falls_back_on_unsafe_output(
-    tmp_path: Path, output: str, exit_code: str
+    tmp_path: Path, output: str, exit_code: str, reason: str
 ) -> None:
     env, calls, _ = setup_affected_project(tmp_path)
     env |= {
@@ -300,6 +305,10 @@ def test_affected_selection_falls_back_on_unsafe_output(
     assert result.returncode == 0
     assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines()[-1] == "pytest:-q"
+    recorded = telemetry_events(tmp_path)
+    assert recorded[0]["test_selection"] == "full"
+    assert recorded[0]["test_selection_reason"] == reason
+    assert recorded[0]["affected_test_count"] is None
 
 
 def test_affected_selection_rejects_test_outside_root(tmp_path: Path) -> None:
@@ -312,6 +321,7 @@ def test_affected_selection_rejects_test_outside_root(tmp_path: Path) -> None:
     assert result.returncode == 0
     assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines()[-1] == "pytest:-q"
+    assert telemetry_events(tmp_path)[0]["test_selection_reason"] == "invalid_output"
 
 
 def test_affected_selection_falls_back_when_cli_is_missing(tmp_path: Path) -> None:
@@ -324,6 +334,7 @@ def test_affected_selection_falls_back_when_cli_is_missing(tmp_path: Path) -> No
     assert result.returncode == 0
     assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines()[-1] == "pytest:-q"
+    assert telemetry_events(tmp_path)[0]["test_selection_reason"] == "cli_missing"
 
 
 def test_affected_selection_passes_configured_depth(tmp_path: Path) -> None:
@@ -351,18 +362,19 @@ def test_affected_selection_falls_back_on_timeout(tmp_path: Path) -> None:
     assert result.returncode == 0
     assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines()[-1] == "pytest:-q"
+    assert telemetry_events(tmp_path)[0]["test_selection_reason"] == "timeout"
 
 
 @pytest.mark.parametrize(
-    ("create_index", "config"),
+    ("create_index", "config", "reason"),
     [
-        (False, ""),
-        (True, "[affected_tests]\nenabled = false\n"),
-        (True, "[affected_tests]\nenabled = 'invalid'\n"),
+        (False, "", "no_index"),
+        (True, "[affected_tests]\nenabled = false\n", "disabled"),
+        (True, "[affected_tests]\nenabled = 'invalid'\n", "error"),
     ],
 )
 def test_affected_selection_falls_back_when_unavailable_or_disabled(
-    tmp_path: Path, create_index: bool, config: str
+    tmp_path: Path, create_index: bool, config: str, reason: str
 ) -> None:
     env, calls, _ = setup_affected_project(
         tmp_path, create_index=create_index, affected_config=config
@@ -373,6 +385,7 @@ def test_affected_selection_falls_back_when_unavailable_or_disabled(
     assert result.returncode == 0
     assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines()[-1] == "pytest:-q"
+    assert telemetry_events(tmp_path)[0]["test_selection_reason"] == reason
 
 
 def test_affected_selection_falls_back_without_python_changes(tmp_path: Path) -> None:
@@ -384,6 +397,7 @@ def test_affected_selection_falls_back_without_python_changes(tmp_path: Path) ->
     assert result.returncode == 0
     assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines()[-1] == "pytest:-q"
+    assert telemetry_events(tmp_path)[0]["test_selection_reason"] == "no_changes"
 
 
 def test_configured_commands_are_not_rewritten_by_affected_selection(
@@ -401,3 +415,7 @@ def test_configured_commands_are_not_rewritten_by_affected_selection(
     assert result.returncode == 0
     assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines() == ["pytest:-q configured_test.py"]
+    recorded = telemetry_events(tmp_path)[0]
+    assert recorded["test_selection"] is None
+    assert recorded["test_selection_reason"] is None
+    assert recorded["affected_test_count"] is None
