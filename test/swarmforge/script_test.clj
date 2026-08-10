@@ -36,6 +36,18 @@
 (defn script [name]
   (str (fs/path scripts-dir name)))
 
+(defn wait-until [timeout-ms predicate]
+  (loop [remaining timeout-ms]
+    (cond
+      (predicate) true
+      (not (pos? remaining)) false
+      :else (do
+              (Thread/sleep 100)
+              (recur (- remaining 100))))))
+
+(defn process-alive? [pid]
+  (zero? (:exit (run {:dir repo-root :ok? false} "kill" "-0" pid))))
+
 (deftest handoff-lib-parses-and-prints-handoff-files
   (let [root (tmp-dir)
         handoff-file (fs/path root "task.handoff")]
@@ -135,6 +147,56 @@
         (is (str/includes? (:out result) "swarmforge-coder"))
         (is (str/includes? (:out result) "swarmforge-cleaner"))
         (is (fs/exists? (fs/path root ".swarmforge/tmux-socket"))))
+      (finally
+        (fs/delete-tree root)))))
+
+(deftest launcher-prepares-codegraph-only-with-root-consent
+  (let [root (tmp-dir)
+        fake-bin (fs/path root "bin")
+        calls (fs/path root "codegraph.calls")
+        coder-worktree (fs/path root ".worktrees/coder")
+        env {"PATH" (str fake-bin ":" (System/getenv "PATH"))
+             "SWARMFORGE_TEST_CODEGRAPH_CALLS" (str calls)}]
+    (try
+      (init-repo! root)
+      (write-file (fs/path root "swarmforge/constitution.prompt") "constitution\n")
+      (write-file (fs/path root "swarmforge/swarmforge.conf")
+                  "window planner codex master\nwindow coder codex coder\n")
+      (write-file (fs/path root "swarmforge/roles/planner.prompt") "planner\n")
+      (write-file (fs/path root "swarmforge/roles/coder.prompt") "coder\n")
+      (write-file (fs/path fake-bin "codegraph")
+                  (str "#!/bin/sh\n"
+                       "printf '%s\\n' \"$*\" >> \"$SWARMFORGE_TEST_CODEGRAPH_CALLS\"\n"
+                       "mkdir -p \"$3/.codegraph\"\n"))
+      (run {:dir root} "chmod" "+x" (str (fs/path fake-bin "codegraph")))
+      (run {:dir root :env env}
+           (script "swarmforge.bb") "--test-prepare-worktrees" (str root))
+      (is (not (fs/exists? calls)))
+
+      (fs/create-dirs (fs/path root ".codegraph"))
+      (run {:dir root :env env}
+           (script "swarmforge.bb") "--test-prepare-worktrees" (str root))
+      (run {:dir root :env env}
+           (script "swarmforge.bb") "--test-prepare-worktrees" (str root))
+      (is (= [(str "init -i " coder-worktree)]
+             (str/split-lines (slurp (str calls)))))
+
+      (let [failed-worktree (fs/path root ".worktrees/failed")]
+        (write-file (fs/path fake-bin "codegraph") "#!/bin/sh\nexit 7\n")
+        (run {:dir root} "chmod" "+x" (str (fs/path fake-bin "codegraph")))
+        (let [result (run {:dir root :env env}
+                          (script "swarmforge.bb")
+                          "--test-prepare-codegraph" (str root) (str failed-worktree))]
+          (is (= 0 (:exit result)))
+          (is (str/includes? (:out result) "CodeGraph preparation failed"))))
+
+      (let [missing-worktree (fs/path root ".worktrees/missing-cli")
+            bb-command (str/trim (:out (run {:dir root} "sh" "-c" "command -v bb")))
+            result (run {:dir root :env {"PATH" "/usr/bin:/bin"}}
+                        bb-command (script "swarmforge.bb")
+                        "--test-prepare-codegraph" (str root) (str missing-worktree))]
+        (is (= 0 (:exit result)))
+        (is (str/includes? (:out result) "CodeGraph preparation skipped")))
       (finally
         (fs/delete-tree root)))))
 
@@ -352,6 +414,45 @@
         (is (= 0 (:exit result)))
         (is (= "" (:err result))))
       (finally
+        (fs/delete-tree root)))))
+
+(deftest handoff-daemon-survives-short-lived-launcher-parent
+  (let [root (tmp-dir)
+        fake-bin (fs/path root "bin")
+        sender (fs/path root "sender")
+        receiver (fs/path root "receiver")
+        daemon-dir (fs/path root ".swarmforge/daemon")
+        pid-file (fs/path daemon-dir "handoffd.pid")
+        stop-file (fs/path daemon-dir "stop")
+        delivered (fs/path receiver ".swarmforge/handoffs/inbox/new/task.handoff")]
+    (try
+      (write-file (fs/path fake-bin "tmux") "#!/bin/sh\nexit 0\n")
+      (run {:dir root} "chmod" "+x" (str (fs/path fake-bin "tmux")))
+      (write-file (fs/path root ".swarmforge/tmux-socket") "fake.sock\n")
+      (write-file (fs/path root ".swarmforge/roles.tsv")
+                  (str "sender\tmaster\t" sender "\tsender-session\tSender\tcodex\ttask\teager\n"
+                       "receiver\treceiver\t" receiver "\treceiver-session\tReceiver\tcodex\ttask\teager\n"))
+      (write-file (fs/path sender ".swarmforge/handoffs/outbox/task.handoff")
+                  (str "id: task-1\nfrom: sender\nto: receiver\npriority: 50\n"
+                       "type: note\nmessage: hello\n\npayload\n"))
+      (run {:dir root
+            :env {"PATH" (str fake-bin ":" (System/getenv "PATH"))
+                  "SWARMFORGE_PREVENT_SLEEP" "0"}}
+           "sh" "-c"
+           (str "bb " (script "swarmforge.bb")
+                " --test-start-handoff-daemon " root))
+      (is (wait-until 5000 #(fs/exists? pid-file)))
+      (let [pid (str/trim (slurp (str pid-file)))]
+        (is (process-alive? pid))
+        (is (wait-until 5000 #(fs/exists? delivered)))
+        (write-file stop-file "")
+        (is (wait-until 5000 #(not (process-alive? pid))))
+        (is (not (fs/exists? pid-file))))
+      (finally
+        (write-file stop-file "")
+        (when (fs/exists? pid-file)
+          (let [pid (str/trim (slurp (str pid-file)))]
+            (run {:dir root :ok? false} "kill" "-TERM" pid)))
         (fs/delete-tree root)))))
 
 (defn close-swarm []

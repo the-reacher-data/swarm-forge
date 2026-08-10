@@ -35,6 +35,17 @@ RESULTS = {
     "accepted",
     "completed",
 }
+TEST_SELECTION_REASONS = {
+    "ok",
+    "disabled",
+    "no_index",
+    "cli_missing",
+    "no_changes",
+    "error",
+    "timeout",
+    "invalid_output",
+    "no_tests",
+}
 
 
 def _bounded(value: str | None) -> str | None:
@@ -108,6 +119,9 @@ def record_event(
     gate_failure_count: int | None = None,
     tool_output_bytes_exposed: int | None = None,
     gate_mode: str | None = None,
+    test_selection: str | None = None,
+    test_selection_reason: str | None = None,
+    affected_test_count: int | None = None,
 ) -> bool:
     """Append one event, returning false when telemetry is disabled or dropped."""
     if event not in EVENTS or result not in RESULTS:
@@ -125,9 +139,24 @@ def record_event(
     if event == "gate":
         if gate_failure_count not in {0, 1}:
             return False
+        if test_selection not in {None, "affected", "full"}:
+            return False
+        if test_selection_reason not in TEST_SELECTION_REASONS | {None}:
+            return False
+        if test_selection is None and (
+            test_selection_reason is not None or affected_test_count is not None
+        ):
+            return False
     elif any(
         value is not None
-        for value in (gate_failure_count, tool_output_bytes_exposed, gate_mode)
+        for value in (
+            gate_failure_count,
+            tool_output_bytes_exposed,
+            gate_mode,
+            test_selection,
+            test_selection_reason,
+            affected_test_count,
+        )
     ):
         return False
     metrics_dir = _telemetry_dir(root)
@@ -151,6 +180,10 @@ def record_event(
         }
         if gate_mode is not None:
             record["gate_mode"] = _bounded(gate_mode)
+        if event == "gate":
+            record["test_selection"] = test_selection
+            record["test_selection_reason"] = test_selection_reason
+            record["affected_test_count"] = _optional_integer(affected_test_count)
         payload = (
             json.dumps(record, sort_keys=False, separators=(",", ":")) + "\n"
         ).encode()
@@ -186,6 +219,11 @@ def _parser() -> argparse.ArgumentParser:
     record.add_argument("--gate-failure-count", type=int)
     record.add_argument("--tool-output-bytes-exposed", type=int)
     record.add_argument("--gate-mode")
+    record.add_argument("--test-selection", choices=["affected", "full"])
+    record.add_argument(
+        "--test-selection-reason", choices=sorted(TEST_SELECTION_REASONS)
+    )
+    record.add_argument("--affected-test-count", type=int)
     return parser
 
 
@@ -202,6 +240,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             gate_failure_count=args.gate_failure_count,
             tool_output_bytes_exposed=args.tool_output_bytes_exposed,
             gate_mode=_bounded(args.gate_mode),
+            test_selection=_bounded(args.test_selection),
+            test_selection_reason=_bounded(args.test_selection_reason),
+            affected_test_count=args.affected_test_count,
         )
     except Exception:
         pass

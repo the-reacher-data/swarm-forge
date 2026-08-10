@@ -61,6 +61,9 @@ def test_record_writes_ordered_schema_and_resolves_backend(
         "tool_output_bytes_exposed",
         "tokens",
         "gate_mode",
+        "test_selection",
+        "test_selection_reason",
+        "affected_test_count",
     ]
     assert event == {
         "schema_version": 1,
@@ -76,6 +79,9 @@ def test_record_writes_ordered_schema_and_resolves_backend(
         "tool_output_bytes_exposed": 0,
         "tokens": {"input": None, "output": None, "cache_read": None},
         "gate_mode": "fast",
+        "test_selection": None,
+        "test_selection_reason": None,
+        "affected_test_count": None,
     }
 
 

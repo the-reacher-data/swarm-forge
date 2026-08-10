@@ -266,6 +266,41 @@
   (write-sessions-file! ctx)
   (write-roles-file! ctx))
 
+(defn codegraph-init! [worktree-path]
+  (try
+    (let [builder (java.lang.ProcessBuilder.
+                   ^java.util.List ["codegraph" "init" "-i" (str worktree-path)])
+          timeout-seconds (env-long "SWARMFORGE_CODEGRAPH_INIT_TIMEOUT_SECONDS" 120)]
+      (.redirectInput builder (java.io.File. "/dev/null"))
+      (.redirectOutput builder (java.io.File. "/dev/null"))
+      (.redirectError builder (java.io.File. "/dev/null"))
+      (let [child (.start builder)
+            finished? (.waitFor child timeout-seconds java.util.concurrent.TimeUnit/SECONDS)]
+        (if finished?
+          (if (zero? (.exitValue child)) :ok :failed)
+          (do
+            (.destroyForcibly child)
+            (.waitFor child)
+            :timeout))))
+    (catch Exception _ :failed)))
+
+(defn prepare-codegraph-worktrees! [ctx]
+  (when (fs/exists? (fs/path (:working-dir ctx) ".codegraph"))
+    (let [worktrees (for [row (:roles ctx)
+                          :let [worktree-name (:worktree-name row)
+                                worktree-path (:worktree-path row)]
+                          :when (and (not (#{"none" "master"} worktree-name))
+                                     (not (fs/exists? (fs/path worktree-path ".codegraph"))))]
+                      worktree-path)]
+      (when (seq worktrees)
+        (if-not (command-exists? "codegraph")
+          (println "CodeGraph preparation skipped: CLI not found.")
+          (doseq [worktree-path worktrees
+                  :let [result (codegraph-init! worktree-path)]]
+            (when-not (= :ok result)
+              (println (str "CodeGraph preparation " (name result) " for "
+                            worktree-path "; continuing.")))))))))
+
 (defn prepare-worktrees! [ctx]
   (doseq [row (:roles ctx)
           :let [worktree-name (:worktree-name row)
@@ -274,7 +309,8 @@
           :when (not (#{"none" "master"} worktree-name))]
     (when-not (or (fs/exists? (fs/path worktree-path ".git"))
                   (fs/directory? (fs/path worktree-path ".git")))
-      (sh "git" "-C" (str (:working-dir ctx)) "worktree" "add" "--force" "-B" branch-name (str worktree-path) "HEAD"))))
+      (sh "git" "-C" (str (:working-dir ctx)) "worktree" "add" "--force" "-B" branch-name (str worktree-path) "HEAD")))
+  (prepare-codegraph-worktrees! ctx))
 
 (defn prepare-handoff-dirs! [ctx]
   (doseq [row (:roles ctx)
@@ -430,16 +466,27 @@
                  "--why=SwarmForge swarm is active"])
       nil)))
 
+(defn start-detached! [command log-file]
+  (let [builder (java.lang.ProcessBuilder. ^java.util.List command)]
+    (.redirectInput builder (java.io.File. "/dev/null"))
+    (.redirectOutput builder
+                     (java.lang.ProcessBuilder$Redirect/appendTo
+                      (java.io.File. (str log-file))))
+    (.redirectErrorStream builder true)
+    (.start builder)))
+
 (defn start-handoff-daemon! [ctx]
+  (fs/create-dirs (:daemon-dir ctx))
   (fs/delete-if-exists (fs/path (:daemon-dir ctx) "stop"))
-  (let [command (into (vec (sleep-inhibitor-prefix))
-                      [(str (fs/path (:script-dir ctx) "handoffd.bb"))
-                       (str (:working-dir ctx))])]
-    (process/process command
-                     {:out (str (:handoff-daemon-log ctx))
-                      :err :out})
+  (let [inhibitor (vec (sleep-inhibitor-prefix))
+        daemon-command (into inhibitor
+                             [(str (fs/path (:script-dir ctx) "handoffd.bb"))
+                              (str (:working-dir ctx))])
+        detach-prefix (if (command-exists? "setsid") ["setsid"] ["nohup"])
+        command (into detach-prefix daemon-command)]
+    (start-detached! command (:handoff-daemon-log ctx))
     (println (str green "Started handoff daemon"
-                  (when (> (count command) 2) " with OS sleep prevention")
+                  (when (seq inhibitor) " with OS sleep prevention")
                   "."
                   reset))))
 
@@ -627,6 +674,17 @@
 (defn test-sleep-inhibitor-prefix! []
   (println (str/join " " (or (sleep-inhibitor-prefix) []))))
 
+(defn test-start-handoff-daemon! [root]
+  (start-handoff-daemon! (context root)))
+
+(defn test-prepare-worktrees! [root]
+  (prepare-worktrees! (prepare-ctx (context root))))
+
+(defn test-prepare-codegraph! [root worktree]
+  (prepare-codegraph-worktrees!
+   {:working-dir (fs/path root)
+    :roles [{:worktree-name "test" :worktree-path (fs/path worktree)}]}))
+
 (defn -main [& args]
   (case (first args)
     "--test-parse" (test-parse! (or (second args) (System/getProperty "user.dir")))
@@ -636,6 +694,9 @@
                                      (drop 2 args))
     "--test-agent-start-delay" (println (env-long "SWARMFORGE_AGENT_START_DELAY_MS" 1500))
     "--test-sleep-inhibitor-prefix" (test-sleep-inhibitor-prefix!)
+    "--test-start-handoff-daemon" (test-start-handoff-daemon! (second args))
+    "--test-prepare-worktrees" (test-prepare-worktrees! (second args))
+    "--test-prepare-codegraph" (test-prepare-codegraph! (second args) (nth args 2))
     "--test-tmux-base-indexes" (test-tmux-base-indexes! (second args))
     (run-main! (or (first args) (System/getProperty "user.dir")))))
 

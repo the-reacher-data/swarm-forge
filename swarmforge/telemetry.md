@@ -23,6 +23,9 @@ is one JSON object with keys in this order:
 | `tool_output_bytes_exposed` | Diagnostic bytes printed for a failed gate, `0` for a passing gate, otherwise `null`. |
 | `tokens` | Reserved provider counters. `input`, `output`, and `cache_read` are `null` in this version. |
 | `gate_mode` | Gate mode. Present only on `gate` events. |
+| `test_selection` | `affected`, `full`, or `null` when the gate does not run default pytest. |
+| `test_selection_reason` | Selection result enum such as `ok`, `no_index`, `invalid_output`, or `null`. |
+| `affected_test_count` | Number of selected affected tests, otherwise `null`. |
 
 ## Privacy and bounds
 
@@ -30,6 +33,9 @@ Telemetry never reads or records prompts, transcripts, credentials,
 environment dumps, command output, or file contents. Gate diagnostics are
 represented only by the number of bytes exposed. Provider token values are not
 available and remain null.
+
+Test-selection telemetry contains only an enum and count. Affected file paths
+and test names are never included.
 
 Each serialized line is limited to 4096 bytes and is dropped rather than
 truncated when it cannot fit. CLI string inputs are limited to 256 characters.
