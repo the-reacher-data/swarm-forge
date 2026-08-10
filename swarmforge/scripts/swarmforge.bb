@@ -430,16 +430,27 @@
                  "--why=SwarmForge swarm is active"])
       nil)))
 
+(defn start-detached! [command log-file]
+  (let [builder (java.lang.ProcessBuilder. ^java.util.List command)]
+    (.redirectInput builder (java.io.File. "/dev/null"))
+    (.redirectOutput builder
+                     (java.lang.ProcessBuilder$Redirect/appendTo
+                      (java.io.File. (str log-file))))
+    (.redirectErrorStream builder true)
+    (.start builder)))
+
 (defn start-handoff-daemon! [ctx]
+  (fs/create-dirs (:daemon-dir ctx))
   (fs/delete-if-exists (fs/path (:daemon-dir ctx) "stop"))
-  (let [command (into (vec (sleep-inhibitor-prefix))
-                      [(str (fs/path (:script-dir ctx) "handoffd.bb"))
-                       (str (:working-dir ctx))])]
-    (process/process command
-                     {:out (str (:handoff-daemon-log ctx))
-                      :err :out})
+  (let [inhibitor (vec (sleep-inhibitor-prefix))
+        daemon-command (into inhibitor
+                             [(str (fs/path (:script-dir ctx) "handoffd.bb"))
+                              (str (:working-dir ctx))])
+        detach-prefix (if (command-exists? "setsid") ["setsid"] ["nohup"])
+        command (into detach-prefix daemon-command)]
+    (start-detached! command (:handoff-daemon-log ctx))
     (println (str green "Started handoff daemon"
-                  (when (> (count command) 2) " with OS sleep prevention")
+                  (when (seq inhibitor) " with OS sleep prevention")
                   "."
                   reset))))
 
@@ -627,6 +638,9 @@
 (defn test-sleep-inhibitor-prefix! []
   (println (str/join " " (or (sleep-inhibitor-prefix) []))))
 
+(defn test-start-handoff-daemon! [root]
+  (start-handoff-daemon! (context root)))
+
 (defn -main [& args]
   (case (first args)
     "--test-parse" (test-parse! (or (second args) (System/getProperty "user.dir")))
@@ -636,6 +650,7 @@
                                      (drop 2 args))
     "--test-agent-start-delay" (println (env-long "SWARMFORGE_AGENT_START_DELAY_MS" 1500))
     "--test-sleep-inhibitor-prefix" (test-sleep-inhibitor-prefix!)
+    "--test-start-handoff-daemon" (test-start-handoff-daemon! (second args))
     "--test-tmux-base-indexes" (test-tmux-base-indexes! (second args))
     (run-main! (or (first args) (System/getProperty "user.dir")))))
 

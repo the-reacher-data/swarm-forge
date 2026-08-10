@@ -36,6 +36,18 @@
 (defn script [name]
   (str (fs/path scripts-dir name)))
 
+(defn wait-until [timeout-ms predicate]
+  (loop [remaining timeout-ms]
+    (cond
+      (predicate) true
+      (not (pos? remaining)) false
+      :else (do
+              (Thread/sleep 100)
+              (recur (- remaining 100))))))
+
+(defn process-alive? [pid]
+  (zero? (:exit (run {:dir repo-root :ok? false} "kill" "-0" pid))))
+
 (deftest handoff-lib-parses-and-prints-handoff-files
   (let [root (tmp-dir)
         handoff-file (fs/path root "task.handoff")]
@@ -352,6 +364,45 @@
         (is (= 0 (:exit result)))
         (is (= "" (:err result))))
       (finally
+        (fs/delete-tree root)))))
+
+(deftest handoff-daemon-survives-short-lived-launcher-parent
+  (let [root (tmp-dir)
+        fake-bin (fs/path root "bin")
+        sender (fs/path root "sender")
+        receiver (fs/path root "receiver")
+        daemon-dir (fs/path root ".swarmforge/daemon")
+        pid-file (fs/path daemon-dir "handoffd.pid")
+        stop-file (fs/path daemon-dir "stop")
+        delivered (fs/path receiver ".swarmforge/handoffs/inbox/new/task.handoff")]
+    (try
+      (write-file (fs/path fake-bin "tmux") "#!/bin/sh\nexit 0\n")
+      (run {:dir root} "chmod" "+x" (str (fs/path fake-bin "tmux")))
+      (write-file (fs/path root ".swarmforge/tmux-socket") "fake.sock\n")
+      (write-file (fs/path root ".swarmforge/roles.tsv")
+                  (str "sender\tmaster\t" sender "\tsender-session\tSender\tcodex\ttask\teager\n"
+                       "receiver\treceiver\t" receiver "\treceiver-session\tReceiver\tcodex\ttask\teager\n"))
+      (write-file (fs/path sender ".swarmforge/handoffs/outbox/task.handoff")
+                  (str "id: task-1\nfrom: sender\nto: receiver\npriority: 50\n"
+                       "type: note\nmessage: hello\n\npayload\n"))
+      (run {:dir root
+            :env {"PATH" (str fake-bin ":" (System/getenv "PATH"))
+                  "SWARMFORGE_PREVENT_SLEEP" "0"}}
+           "sh" "-c"
+           (str "bb " (script "swarmforge.bb")
+                " --test-start-handoff-daemon " root))
+      (is (wait-until 5000 #(fs/exists? pid-file)))
+      (let [pid (str/trim (slurp (str pid-file)))]
+        (is (process-alive? pid))
+        (is (wait-until 5000 #(fs/exists? delivered)))
+        (write-file stop-file "")
+        (is (wait-until 5000 #(not (process-alive? pid))))
+        (is (not (fs/exists? pid-file))))
+      (finally
+        (write-file stop-file "")
+        (when (fs/exists? pid-file)
+          (let [pid (str/trim (slurp (str pid-file)))]
+            (run {:dir root :ok? false} "kill" "-TERM" pid)))
         (fs/delete-tree root)))))
 
 (defn close-swarm []
