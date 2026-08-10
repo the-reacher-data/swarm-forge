@@ -1,0 +1,7 @@
+# Copy overrides to .swarmforge/backends.local.toml (which is ignored).
+# Use absolute command paths here when a CLI is not on PATH. Never store secrets.
+[instances.claude-trabajo]
+command = ["/absolute/path/to/claude"]
+
+[instances.claude-trabajo.environment]
+CLAUDE_CONFIG_DIR = "/absolute/path/to/.aisw/profiles/trabajo"

@@ -1,27 +1,9 @@
-# Project Rules
+# Python Lean Project
 
-## Project Shape
-- This project is configured for SwarmForge with two Codex-backed agents:
-  coder and cleaner.
-- The coder is the master worktree role.
-- Project language: Babashka.
-
-## Local Configuration
-- Preserve project-local SwarmForge configuration under `swarmforge/`.
-- Keep swarm state local under `.swarmforge/`, worktrees under `.worktrees/`,
-  and shared scripts under `swarmforge/scripts/`.
-
-## Workflow
-- The cleaner receives coder handoffs in batch mode.
-- Do not create or use Gherkin, IR, acceptance tests, Gherkin mutation, or
-  property tests.
-- Use unit tests and language-local verification only.
-
-## Handoffs
-- Prefer terse, explicit handoffs that report state and request
-  role-appropriate review.
-- Do not include sender process narrative.
-
-## Ownership
-- Do not change another role's prompt or workflow ownership without explicit
-  user direction.
+- Planner: `claude-trabajo` in the main checkout.
+- Coder: `codex-primary` in its implementation worktree.
+- Architect: `claude-personal`, started lazily for semantic design risk.
+- Security reviewer: `claude-trabajo`, started lazily for security-sensitive work.
+- Backend instances are authoritative; never switch accounts or providers as fallback.
+- `swarmforge/project-agents.toml` is the specialist trust boundary.
+- Runtime state stays under `.swarmforge/`; role worktrees stay under `.worktrees/`.

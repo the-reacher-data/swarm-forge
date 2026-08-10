@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+project_root="${SWARMFORGE_PROJECT_ROOT:-$(git rev-parse --show-toplevel)}"
+exec python3 "$project_root/swarmforge/gates/gate.py" --pre-handoff

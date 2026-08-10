@@ -1,0 +1,14 @@
+# Portable backend instances. Keep credentials out of this file.
+[instances.codex-primary]
+kind = "codex"
+command = ["codex"]
+
+[instances.claude-trabajo]
+kind = "claude"
+command = ["claude"]
+profile = "trabajo"
+
+[instances.claude-personal]
+kind = "claude"
+command = ["claude"]
+profile = "personal"

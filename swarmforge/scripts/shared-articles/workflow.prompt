@@ -7,15 +7,21 @@
 - Do not inspect, diff, merge, or base work on another branch unless that branch is specifically named in a handoff or explicit user instruction.
 - Do not run `./swarm` from an agent worktree to repair helper scripts. If handoff helper scripts are missing from PATH, stop and report the startup failure.
 
+## Announcements
+- Do not add role bylines to announcements or check-in comments.
+
+## Commit Messages
+- Include your role byline in every git commit message in this form: `By <role>.`
+- Example:
+
+```text
+Implement handoff validation
+
+By coder.
+```
+
 ## Temporary Files
 - Use `./tmp/` in your assigned worktree for temporary files; do not use `/tmp`.
 
 ## Failure Conditions
 - If the expected git layout or assigned worktree is missing, stop and report instead of silently working in the wrong place.
-
-## Handoffs
-- Run `ready_for_next.sh` when notified, and `done_with_current.sh` after completing accepted work.
-- Create a short draft and submit it with `swarm_handoff.sh <draft>`; never edit runtime inbox/outbox state.
-- A `git_handoff` contains only `type`, `to`, `priority`, `task`, and a resolvable 10-character commit abbreviation.
-- A `note` contains only `type`, `to`, `priority`, and a single-line `message` up to 80 characters.
-- Keep handoffs to commit, changed paths, checks and unresolved risk; omit process narrative and full logs.

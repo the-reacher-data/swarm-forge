@@ -31,6 +31,10 @@
   (fs/create-dirs (fs/parent path))
   (spit (str path) text))
 
+(defn write-executable [path text]
+  (write-file path text)
+  (run {:dir (fs/parent path)} "chmod" "+x" (str path)))
+
 (defn read-file [path]
   (slurp (str path)))
 
@@ -131,6 +135,39 @@
           (is (fs/exists? queued))
           (is (not (fs/exists? draft))))))))
 
+(deftest swarm-handoff-runs-project-pre-handoff-hook
+  (let [root (tmp-dir)
+        commit (init-repo! root)
+        hook (fs/path root "swarmforge/hooks/pre-handoff")
+        draft (fs/path root "tmp/hook-failure.handoff")]
+    (setup-project! root)
+    (write-executable hook
+                      "#!/bin/sh\nprintf 'ruff failed on src/app.py\\n' >&2\nexit 7\n")
+    (write-file draft
+                (format "type: git_handoff\nto: receiver\npriority: 50\ntask: hook-test\ncommit: %s\n"
+                        commit))
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"} :ok? false}
+                      (script "swarm_handoff.sh") (str draft))]
+      (is (= 2 (:exit result)))
+      (is (str/includes? (:err result) "ruff failed on src/app.py"))
+      (is (fs/exists? draft))
+      (is (empty? (fs/glob (fs/path root ".swarmforge/handoffs/outbox") "*.handoff"))))))
+
+(deftest successful-pre-handoff-hook-is-quiet
+  (let [root (tmp-dir)
+        commit (init-repo! root)
+        hook (fs/path root "swarmforge/hooks/pre-handoff")
+        draft (fs/path root "tmp/hook-success.handoff")]
+    (setup-project! root)
+    (write-executable hook "#!/bin/sh\nprintf 'successful check noise\\n'\n")
+    (write-file draft
+                (format "type: git_handoff\nto: receiver\npriority: 50\ntask: quiet-hook\ncommit: %s\n"
+                        commit))
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"}}
+                      (script "swarm_handoff.sh") (str draft))]
+      (is (not (str/includes? (:out result) "successful check noise")))
+      (is (str/includes? (:out result) "HANDOFF QUEUED:")))))
+
 (deftest ready-for-next-task-accepts-and-resumes-single-tasks
   (let [root (tmp-dir)]
     (init-repo! root)
@@ -201,6 +238,27 @@
       (is (str/includes? (:out result) "TASK_NAME: task-next"))
       (is (some? (header completed "completed_at")))
       (is (some? (header next-file "dequeued_at"))))))
+
+(deftest done-with-current-runs-project-pre-complete-hook
+  (let [root (tmp-dir)
+        current-name "50_20260615T000001Z_000001_from_sender_to_receiver.handoff"
+        current (fs/path root ".swarmforge/handoffs/inbox/in_process" current-name)
+        hook (fs/path root "swarmforge/hooks/pre-complete")]
+    (init-repo! root)
+    (setup-project! root {"receiver" "task"})
+    (put-handoff! root "in_process" current-name
+                  {:id "20260615T000001Z_000001_from_sender"
+                   :from "sender" :to "receiver" :recipient "receiver"
+                   :priority "50" :type "git_handoff" :task "task-current"
+                   :commit "0123456789"})
+    (write-executable hook
+                      "#!/bin/sh\nprintf 'tests still failing\\n' >&2\nexit 9\n")
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "receiver"} :ok? false}
+                      (script "done_with_current.sh"))]
+      (is (= 2 (:exit result)))
+      (is (str/includes? (:err result) "tests still failing"))
+      (is (fs/exists? current))
+      (is (not (fs/exists? (fs/path root ".swarmforge/handoffs/inbox/completed" current-name)))))))
 
 (deftest done-with-current-batch-completes-and-accepts-next-batch
   (let [root (tmp-dir)

@@ -1,0 +1,8 @@
+[gate]
+max_output_bytes = 8192
+timeout_seconds = 180
+
+# Add [commands] entries only when the project's existing toolchain differs
+# from the auto-detected Ruff, pytest, mypy, or pyright defaults. Commands are
+# arrays of argv arrays so the gate never executes configuration through a
+# shell.

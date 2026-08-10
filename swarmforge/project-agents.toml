@@ -1,0 +1,14 @@
+# This registry is the trust boundary. The planner may route only to listed agents.
+[agents.architect]
+role = "architect"
+backend_instance = "claude-personal"
+mode = "lazy"
+prompt = "swarmforge/roles/architect.prompt"
+tags = ["architecture", "public-api", "large-change"]
+
+[agents.security-reviewer]
+role = "security-reviewer"
+backend_instance = "claude-trabajo"
+mode = "lazy"
+prompt = "swarmforge/roles/security-reviewer.prompt"
+tags = ["security", "auth", "crypto", "secrets"]

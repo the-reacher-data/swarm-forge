@@ -1,0 +1,8 @@
+# Token Economy
+
+- Do not narrate tool calls or restate the task.
+- Passing deterministic checks need no summary; report only actionable failures.
+- Read the smallest source range needed and do not reread unchanged files.
+- Prefer graph/symbol context and diffs over whole files or conversations.
+- Never include generated files, lockfiles or full logs unless directly required.
+- Keep handoffs machine-like and bounded. Stop exploring when evidence is sufficient.

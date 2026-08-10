@@ -2,8 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MAIN_BRANCH="${SWARMFORGE_SCRIPTS_BRANCH:-main}"
-ARCHIVE_URL="${SWARMFORGE_SCRIPTS_URL:-https://github.com/unclebob/swarm-forge/archive/refs/heads/${MAIN_BRANCH}.tar.gz}"
+MAIN_BRANCH="${SWARMFORGE_SCRIPTS_BRANCH:-python-lean}"
+ARCHIVE_REPO="${SWARMFORGE_SCRIPTS_REPO:-the-reacher-data/swarm-forge}"
+ARCHIVE_URL="${SWARMFORGE_SCRIPTS_URL:-https://github.com/${ARCHIVE_REPO}/archive/refs/heads/${MAIN_BRANCH}.tar.gz}"
 TMP_DIR=""
 
 cleanup() {
