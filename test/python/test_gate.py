@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -41,6 +42,11 @@ def gate(
     return run(sys.executable, str(GATE), mode, cwd=root, env=env)
 
 
+def telemetry_events(root: Path) -> list[dict[str, object]]:
+    metrics = root / ".swarmforge" / "metrics" / "events.jsonl"
+    return [json.loads(line) for line in metrics.read_text().splitlines()]
+
+
 def test_non_python_project_is_a_quiet_noop(tmp_path: Path) -> None:
     result = gate(tmp_path, "--fast")
 
@@ -74,10 +80,18 @@ def test_fast_gate_runs_ruff_only_for_changed_python_files(tmp_path: Path) -> No
     result = gate(tmp_path, "--fast", env)
 
     assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines() == [
         "check --fix src/app.py",
         "format src/app.py",
     ]
+    recorded = telemetry_events(tmp_path)
+    assert len(recorded) == 1
+    assert recorded[0]["event"] == "gate"
+    assert recorded[0]["result"] == "pass"
+    assert recorded[0]["gate_mode"] == "fast"
+    assert recorded[0]["gate_failure_count"] == 0
+    assert recorded[0]["tool_output_bytes_exposed"] == 0
 
 
 def test_failed_gate_bounds_feedback_and_keeps_full_log(tmp_path: Path) -> None:
@@ -101,3 +115,86 @@ def test_failed_gate_bounds_feedback_and_keeps_full_log(tmp_path: Path) -> None:
         line for line in result.stderr.splitlines() if line.startswith("full_log=")
     )
     assert Path(log_line.removeprefix("full_log=")).is_file()
+    recorded = telemetry_events(tmp_path)
+    assert len(recorded) == 1
+    assert recorded[0]["result"] == "fail"
+    assert recorded[0]["gate_failure_count"] == 1
+    assert recorded[0]["tool_output_bytes_exposed"] == 8_192
+    assert "ruff failure" not in json.dumps(recorded[0])
+
+
+def test_gate_config_failure_is_recorded_without_changing_stderr(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+    (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge/python-gates.toml").write_text(
+        "[commands]\nfast = 'invalid'\n"
+    )
+
+    result = gate(tmp_path, "--fast")
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert result.stderr.startswith("GATE_CONFIG_FAILED:")
+    recorded = telemetry_events(tmp_path)
+    assert len(recorded) == 1
+    assert recorded[0]["result"] == "config_failed"
+    assert recorded[0]["gate_failure_count"] == 1
+
+
+def test_gate_setup_failure_is_recorded(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+    (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge/python-gates.toml").write_text(
+        "[commands]\nfast = [['swarmforge-command-that-does-not-exist']]\n"
+    )
+
+    result = gate(tmp_path, "--fast")
+
+    assert result.returncode == 2
+    assert "GATE_SETUP_FAILED" in result.stderr
+    recorded = telemetry_events(tmp_path)
+    assert len(recorded) == 1
+    assert recorded[0]["result"] == "setup_failed"
+    assert recorded[0]["tool_output_bytes_exposed"] == 0
+
+
+def test_gate_timeout_is_recorded(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+    (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge/python-gates.toml").write_text(
+        "[gate]\ntimeout_seconds = 1\n\n"
+        f"[commands]\nstop = [[{json.dumps(sys.executable)}, '-c', "
+        "'import time; time.sleep(2)']]\n"
+    )
+
+    result = gate(tmp_path, "--stop")
+
+    assert result.returncode == 2
+    assert "status=timeout:1s" in result.stderr
+    recorded = telemetry_events(tmp_path)
+    assert len(recorded) == 1
+    assert recorded[0]["result"] == "timeout"
+    assert recorded[0]["gate_failure_count"] == 1
+
+
+def test_telemetry_failure_does_not_change_gate_result(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+    (tmp_path / "blocked").write_text("not a directory")
+    (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge/python-gates.toml").write_text(
+        "[telemetry]\ndir = 'blocked/metrics'\n\n"
+        f"[commands]\nfast = [[{json.dumps(sys.executable)}, '-c', 'pass']]\n"
+    )
+
+    result = gate(tmp_path, "--fast")
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""

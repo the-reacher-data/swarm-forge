@@ -7,6 +7,7 @@
             [clojure.string :as str]))
 
 (def script-dir (fs/parent *file*))
+(def telemetry-script (fs/path (fs/parent script-dir) "telemetry" "metrics.py"))
 
 (def usage-text
   (str "Usage: swarm_handoff.sh <draft-file>\n\n"
@@ -25,6 +26,8 @@
 (def allowed-fields #{"type" "to" "priority" "task" "commit" "message"})
 (def allowed-types #{"git_handoff" "note"})
 
+(declare project-root)
+
 (defn usage []
   (binding [*out* *err*]
     (println usage-text)))
@@ -39,6 +42,15 @@
   ([dir & args]
    (let [result (apply sh (concat args [:dir (str dir)]))]
      result)))
+
+(defn record-telemetry! [& args]
+  (try
+    (apply process/sh
+           (concat [{:continue true}]
+                   ["python3" (str telemetry-script) "record"
+                    "--root" (str (project-root))]
+                   args))
+    (catch Exception _ nil)))
 
 (defn git-root []
   (let [result (command "." "git" "rev-parse" "--show-toplevel")]
@@ -303,7 +315,7 @@
       (fs/create-dirs dir))
     (spit (str tmp-file) (str (str/join "\n" lines) "\n"))
     (fs/move tmp-file outbox-file)
-    outbox-file))
+    {:path outbox-file :id id}))
 
 (defn error-report [draft errors]
   (binding [*out* *err*]
@@ -353,11 +365,15 @@
             "SWARMFORGE_HOOK_TASK" (get headers "task")
             "SWARMFORGE_HOOK_COMMIT" (:canonical-commit validation)
             "SWARMFORGE_HOOK_RECIPIENTS" (str/join "," (:recipients validation))}))
-        (let [outbox-file (write-handoff! {:headers headers
-                                           :recipients (:recipients validation)
-                                           :canonical-commit (:canonical-commit validation)
-                                           :sender sender})]
+        (let [{:keys [path id]} (write-handoff! {:headers headers
+                                                :recipients (:recipients validation)
+                                                :canonical-commit (:canonical-commit validation)
+                                                :sender sender})]
+          (record-telemetry! "--event" "handoff_submitted"
+                             "--id" id
+                             "--result" "submitted"
+                             "--handoff-count" (str (count (:recipients validation))))
           (fs/delete draft)
-          (println "HANDOFF QUEUED:" (str outbox-file)))))))
+          (println "HANDOFF QUEUED:" (str path)))))))
 
 (apply -main *command-line-args*)

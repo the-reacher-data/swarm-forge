@@ -6,6 +6,7 @@
             [clojure.string :as str]))
 
 (def script-dir (fs/parent *file*))
+(def telemetry-script (fs/path (fs/parent script-dir) "telemetry" "metrics.py"))
 
 (defn inbox-dir []
   (fs/path (System/getProperty "user.dir") ".swarmforge" "handoffs" "inbox"))
@@ -21,6 +22,14 @@
          (sort-by #(fs/file-name %))
          vec)
     []))
+
+(defn header-field [file field]
+  (let [prefix (str field ": ")]
+    (some (fn [line]
+            (when (str/starts-with? line prefix)
+              (subs line (count prefix))))
+          (take-while (complement str/blank?)
+                      (str/split-lines (slurp (str file)))))))
 
 (defn batch-dirs [dir]
   (if (fs/exists? dir)
@@ -62,6 +71,23 @@
       (println line)))
   (System/exit status))
 
+(defn duration-ms [dequeued-at completed-at]
+  (when dequeued-at
+    (try
+      (.toMillis (java.time.Duration/between
+                   (java.time.Instant/parse dequeued-at)
+                   (java.time.Instant/parse completed-at)))
+      (catch Exception _ nil))))
+
+(defn record-telemetry! [& args]
+  (try
+    (apply process/sh
+           (concat [{:continue true}]
+                   ["python3" (str telemetry-script) "record"
+                    "--root" (System/getProperty "user.dir")]
+                   args))
+    (catch Exception _ nil)))
+
 (defn run-ready! []
   (process/exec (str (fs/path script-dir "ready_for_next_batch.sh"))))
 
@@ -86,7 +112,10 @@
       (let [source-dir (first in-process-batches)
             batch-files (handoff-files source-dir)
             target-dir (fs/path completed-dir (fs/file-name source-dir))
-            completed-at (timestamp)]
+            completed-at (timestamp)
+            elapsed (duration-ms (when-let [file (first batch-files)]
+                                   (header-field file "dequeued_at"))
+                                 completed-at)]
         (when (empty? batch-files)
           (fail! 2 (str "AMBIGUOUS_TASK_STATE: batch contains no tasks: " source-dir)))
         (when (fs/exists? target-dir)
@@ -100,6 +129,12 @@
             (fs/move source-file target-file)
             (println "COMPLETED:" (str target-file))))
         (fs/delete source-dir)
+        (apply record-telemetry!
+               (cond-> ["--event" "batch_completed"
+                        "--id" (str (fs/file-name target-dir))
+                        "--result" "completed"
+                        "--handoff-count" (str (count batch-files))]
+                 (some? elapsed) (conj "--duration-ms" (str elapsed))))
         (println "COMPLETED_BATCH:" (str target-dir))
         (run-ready!)))))
 

@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+import importlib.util
 from pathlib import Path
 import os
 import shutil
 import subprocess
 import sys
+import time
 import tomllib
 import uuid
 
@@ -156,6 +158,35 @@ def emit_failure(
     print(f"full_log={log_path}", file=sys.stderr)
 
 
+def record_gate_event(
+    root: Path,
+    *,
+    mode: str,
+    result: str,
+    started_at: float,
+    tool_output_bytes_exposed: int,
+) -> None:
+    duration_ms = int((time.monotonic() - started_at) * 1_000)
+    try:
+        path = Path(__file__).parents[1] / "telemetry" / "metrics.py"
+        spec = importlib.util.spec_from_file_location("swarmforge_metrics", path)
+        if spec is None or spec.loader is None:
+            return
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.record_event(
+            root,
+            event="gate",
+            result=result,
+            duration_ms=duration_ms,
+            gate_failure_count=0 if result == "pass" else 1,
+            tool_output_bytes_exposed=tool_output_bytes_exposed,
+            gate_mode=mode,
+        )
+    except Exception:
+        pass
+
+
 def run_commands(
     root: Path,
     mode: str,
@@ -163,7 +194,7 @@ def run_commands(
     changed_files: Sequence[str],
     timeout_seconds: int,
     max_bytes: int,
-) -> int:
+) -> tuple[int, str, int]:
     artifact_dir = root / ".swarmforge" / "artifacts" / "gates"
     artifact_dir.mkdir(parents=True, exist_ok=True)
     for index, raw_command in enumerate(commands, start=1):
@@ -176,7 +207,7 @@ def run_commands(
                 f"GATE_SETUP_FAILED mode={mode}: command not found: {missing}",
                 file=sys.stderr,
             )
-            return 2
+            return 2, "setup_failed", 0
         log_path = artifact_dir / f"{mode}-{index}-{uuid.uuid4()}.log"
         try:
             with log_path.open("wb") as log:
@@ -190,6 +221,7 @@ def run_commands(
                     env=os.environ.copy(),
                 )
         except subprocess.TimeoutExpired:
+            exposed_bytes = min(log_path.stat().st_size, max_bytes)
             emit_failure(
                 mode=mode,
                 command=command,
@@ -197,8 +229,9 @@ def run_commands(
                 log_path=log_path,
                 max_bytes=max_bytes,
             )
-            return 2
+            return 2, "timeout", exposed_bytes
         if result.returncode != 0:
+            exposed_bytes = min(log_path.stat().st_size, max_bytes)
             emit_failure(
                 mode=mode,
                 command=command,
@@ -206,9 +239,9 @@ def run_commands(
                 log_path=log_path,
                 max_bytes=max_bytes,
             )
-            return 2
+            return 2, "fail", exposed_bytes
         log_path.unlink(missing_ok=True)
-    return 0
+    return 0, "pass", 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -227,6 +260,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not (root / "pyproject.toml").is_file():
         return 0
     mode = args.mode
+    started_at = time.monotonic()
     try:
         config = load_config(root)
         max_bytes = integer_setting(
@@ -238,9 +272,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         commands = configured_commands(config, mode) or default_commands(root, mode)
     except (OSError, tomllib.TOMLDecodeError, ValueError) as error:
         print(f"GATE_CONFIG_FAILED: {error}", file=sys.stderr)
+        record_gate_event(
+            root,
+            mode=mode,
+            result="config_failed",
+            started_at=started_at,
+            tool_output_bytes_exposed=0,
+        )
         return 2
     changed_files = changed_python_files(root) if mode == "fast" else []
-    return run_commands(
+    exit_code, result, exposed_bytes = run_commands(
         root,
         mode,
         commands,
@@ -248,6 +289,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         timeout_seconds,
         max_bytes,
     )
+    record_gate_event(
+        root,
+        mode=mode,
+        result=result,
+        started_at=started_at,
+        tool_output_bytes_exposed=exposed_bytes,
+    )
+    return exit_code
 
 
 if __name__ == "__main__":

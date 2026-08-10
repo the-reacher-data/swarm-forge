@@ -2,7 +2,11 @@
 
 (ns ready-for-next-batch
   (:require [babashka.fs :as fs]
+            [babashka.process :as process]
             [clojure.string :as str]))
+
+(def script-dir (fs/parent *file*))
+(def telemetry-script (fs/path (fs/parent script-dir) "telemetry" "metrics.py"))
 
 (defn inbox-dir []
   (fs/path (System/getProperty "user.dir") ".swarmforge" "handoffs" "inbox"))
@@ -102,6 +106,15 @@
       (println line)))
   (System/exit status))
 
+(defn record-telemetry! [& args]
+  (try
+    (apply process/sh
+           (concat [{:continue true}]
+                   ["python3" (str telemetry-script) "record"
+                    "--root" (System/getProperty "user.dir")]
+                   args))
+    (catch Exception _ nil)))
+
 (defn new-batch-dir [in-process-dir]
   (loop [suffix 1]
     (let [dir (fs/path in-process-dir (format "batch_%s_%06d" (id-timestamp) suffix))]
@@ -143,6 +156,10 @@
                   (set-header! target-file "dequeued_at" (timestamp))))
               (when (empty? selected-files)
                 (fail! 2 (str "AMBIGUOUS_TASK_STATE: no tasks selected for batch priority " batch-priority ".")))
+              (record-telemetry! "--event" "batch_accepted"
+                                 "--id" (str (fs/file-name batch-dir))
+                                 "--result" "accepted"
+                                 "--handoff-count" (str (count selected-files)))
               (print-batch batch-dir))))))))
 
 (-main)
