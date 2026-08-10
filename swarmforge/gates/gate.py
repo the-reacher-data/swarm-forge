@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Sequence
 import importlib.util
+import json
 from pathlib import Path
 import os
 import shutil
@@ -18,6 +19,7 @@ import uuid
 
 DEFAULT_MAX_OUTPUT_BYTES = 8_192
 DEFAULT_TIMEOUT_SECONDS = 180
+DEFAULT_AFFECTED_TIMEOUT_SECONDS = 30
 
 
 def git_root(cwd: Path) -> Path:
@@ -110,6 +112,88 @@ def configured_commands(config: dict[str, object], mode: str) -> list[list[str]]
             f"commands.{mode.replace('-', '_')} must be an array of string arrays"
         )
     return [list(command) for command in raw]
+
+
+def affected_test_settings(
+    config: dict[str, object],
+) -> tuple[bool, int, int | None] | None:
+    raw = config.get("affected_tests", {})
+    if not isinstance(raw, dict):
+        return None
+    enabled = raw.get("enabled", True)
+    timeout_seconds = raw.get("timeout_seconds", DEFAULT_AFFECTED_TIMEOUT_SECONDS)
+    depth = raw.get("depth")
+    if not isinstance(enabled, bool):
+        return None
+    if (
+        not isinstance(timeout_seconds, int)
+        or isinstance(timeout_seconds, bool)
+        or timeout_seconds <= 0
+    ):
+        return None
+    if depth is not None and (
+        not isinstance(depth, int) or isinstance(depth, bool) or depth <= 0
+    ):
+        return None
+    return enabled, timeout_seconds, depth
+
+
+def affected_tests(
+    root: Path, config: dict[str, object], changed_files: Sequence[str]
+) -> tuple[list[str] | None, str]:
+    settings = affected_test_settings(config)
+    if settings is None:
+        return None, "error"
+    enabled, timeout_seconds, depth = settings
+    if not enabled:
+        return None, "disabled"
+    if not (root / ".codegraph").exists():
+        return None, "no_index"
+    executable = shutil.which("codegraph")
+    if executable is None:
+        return None, "cli_missing"
+    if not changed_files:
+        return None, "no_changes"
+    command = [executable, "affected", "--json", "--stdin", "-p", str(root)]
+    if depth is not None:
+        command.extend(["--depth", str(depth)])
+    try:
+        result = subprocess.run(
+            command,
+            cwd=root,
+            input="".join(f"{path}\n" for path in changed_files),
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        reason = "timeout" if isinstance(error, subprocess.TimeoutExpired) else "error"
+        return None, reason
+    if result.returncode != 0:
+        return None, "error"
+    try:
+        paths = json.loads(result.stdout)
+    except (json.JSONDecodeError, TypeError):
+        return None, "invalid_output"
+    if not isinstance(paths, list) or not all(isinstance(path, str) for path in paths):
+        return None, "invalid_output"
+    if not paths:
+        return None, "no_tests"
+    resolved_root = root.resolve()
+    for path in paths:
+        candidate = Path(path) if Path(path).is_absolute() else root / path
+        try:
+            candidate.resolve().relative_to(resolved_root)
+        except (OSError, ValueError):
+            return None, "invalid_output"
+        name = candidate.name
+        if not candidate.is_file() or not (
+            (name.startswith("test") and name.endswith(".py"))
+            or name.endswith("_test.py")
+        ):
+            return None, "invalid_output"
+    return paths, "ok"
 
 
 def expand_command(
@@ -269,7 +353,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         timeout_seconds = integer_setting(
             config, "timeout_seconds", DEFAULT_TIMEOUT_SECONDS
         )
-        commands = configured_commands(config, mode) or default_commands(root, mode)
+        configured = configured_commands(config, mode)
+        commands = configured or default_commands(root, mode)
     except (OSError, tomllib.TOMLDecodeError, ValueError) as error:
         print(f"GATE_CONFIG_FAILED: {error}", file=sys.stderr)
         record_gate_event(
@@ -281,6 +366,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 2
     changed_files = changed_python_files(root) if mode == "fast" else []
+    if configured is None and ["pytest", "-q"] in commands:
+        selected_tests, _selection_reason = affected_tests(
+            root, config, changed_python_files(root)
+        )
+        if selected_tests is not None:
+            commands = [
+                [*command, *selected_tests] if command == ["pytest", "-q"] else command
+                for command in commands
+            ]
     exit_code, result, exposed_bytes = run_commands(
         root,
         mode,

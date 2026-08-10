@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).parents[2]
 GATE = REPO_ROOT / "swarmforge" / "gates" / "gate.py"
@@ -45,6 +47,63 @@ def gate(
 def telemetry_events(root: Path) -> list[dict[str, object]]:
     metrics = root / ".swarmforge" / "metrics" / "events.jsonl"
     return [json.loads(line) for line in metrics.read_text().splitlines()]
+
+
+def setup_affected_project(
+    root: Path, *, create_index: bool = True, affected_config: str = ""
+) -> tuple[dict[str, str], Path, Path]:
+    init_repo(root)
+    (root / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n\n"
+        "[tool.pytest.ini_options]\n"
+    )
+    if affected_config:
+        (root / "swarmforge").mkdir()
+        (root / "swarmforge/python-gates.toml").write_text(affected_config)
+    source = root / "src/app.py"
+    source.parent.mkdir()
+    source.write_text("VALUE = 1\n")
+    first_test = root / "test/test_app.py"
+    first_test.parent.mkdir()
+    first_test.write_text("def test_app():\n    assert True\n")
+    second_test = root / "test/helpers_test.py"
+    second_test.write_text("def test_helper():\n    assert True\n")
+    run("git", "add", ".", cwd=root)
+    run("git", "commit", "-q", "-m", "initial", cwd=root)
+    source.write_text("VALUE = 2\n")
+    if create_index:
+        (root / ".codegraph").mkdir()
+
+    calls = root / "calls.log"
+    stdin_log = root / "affected.stdin"
+    fake_bin = root / "bin"
+    write_executable(
+        fake_bin / "ruff",
+        "#!/bin/sh\nprintf 'ruff:%s\\n' \"$*\" >> \"$SWARMFORGE_TEST_CALLS\"\n",
+    )
+    write_executable(
+        fake_bin / "pytest",
+        "#!/bin/sh\nprintf 'pytest:%s\\n' \"$*\" >> \"$SWARMFORGE_TEST_CALLS\"\n",
+    )
+    write_executable(
+        fake_bin / "codegraph",
+        "#!/bin/sh\n"
+        "printf '%s\\n' \"$*\" > \"$SWARMFORGE_TEST_CODEGRAPH_ARGS\"\n"
+        "cat > \"$SWARMFORGE_TEST_CODEGRAPH_STDIN\"\n"
+        "sleep \"${SWARMFORGE_TEST_CODEGRAPH_SLEEP:-0}\"\n"
+        "printf '%s' \"$SWARMFORGE_TEST_CODEGRAPH_OUTPUT\"\n"
+        "exit \"${SWARMFORGE_TEST_CODEGRAPH_EXIT:-0}\"\n",
+    )
+    env = os.environ | {
+        "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+        "SWARMFORGE_TEST_CALLS": str(calls),
+        "SWARMFORGE_TEST_CODEGRAPH_ARGS": str(root / "affected.args"),
+        "SWARMFORGE_TEST_CODEGRAPH_STDIN": str(stdin_log),
+        "SWARMFORGE_TEST_CODEGRAPH_OUTPUT": json.dumps(
+            ["test/test_app.py", "test/helpers_test.py"]
+        ),
+    }
+    return env, calls, stdin_log
 
 
 def test_non_python_project_is_a_quiet_noop(tmp_path: Path) -> None:
@@ -198,3 +257,147 @@ def test_telemetry_failure_does_not_change_gate_result(tmp_path: Path) -> None:
 
     assert result.returncode == 0
     assert result.stdout == result.stderr == ""
+
+
+def test_gate_runs_only_codegraph_affected_tests(tmp_path: Path) -> None:
+    env, calls, stdin_log = setup_affected_project(tmp_path)
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines()[-1] == (
+        "pytest:-q test/test_app.py test/helpers_test.py"
+    )
+    assert (tmp_path / "affected.args").read_text().strip() == (
+        f"affected --json --stdin -p {tmp_path}"
+    )
+    assert stdin_log.read_text().splitlines() == ["src/app.py"]
+
+
+@pytest.mark.parametrize(
+    ("output", "exit_code"),
+    [
+        ("not-json", "0"),
+        (json.dumps({"test": "test/test_app.py"}), "0"),
+        (json.dumps([]), "0"),
+        (json.dumps(["test/missing.py"]), "0"),
+        (json.dumps(["src/app.py"]), "0"),
+        (json.dumps(["test/test_app.py"]), "7"),
+    ],
+)
+def test_affected_selection_falls_back_on_unsafe_output(
+    tmp_path: Path, output: str, exit_code: str
+) -> None:
+    env, calls, _ = setup_affected_project(tmp_path)
+    env |= {
+        "SWARMFORGE_TEST_CODEGRAPH_OUTPUT": output,
+        "SWARMFORGE_TEST_CODEGRAPH_EXIT": exit_code,
+    }
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines()[-1] == "pytest:-q"
+
+
+def test_affected_selection_rejects_test_outside_root(tmp_path: Path) -> None:
+    env, calls, _ = setup_affected_project(tmp_path)
+    outside = Path(__file__).resolve()
+    env["SWARMFORGE_TEST_CODEGRAPH_OUTPUT"] = json.dumps([str(outside)])
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines()[-1] == "pytest:-q"
+
+
+def test_affected_selection_falls_back_when_cli_is_missing(tmp_path: Path) -> None:
+    env, calls, _ = setup_affected_project(tmp_path)
+    (tmp_path / "bin/codegraph").rename(tmp_path / "bin/codegraph-disabled")
+    env["PATH"] = f"{tmp_path / 'bin'}{os.pathsep}/usr/bin:/bin"
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines()[-1] == "pytest:-q"
+
+
+def test_affected_selection_passes_configured_depth(tmp_path: Path) -> None:
+    env, calls, _ = setup_affected_project(
+        tmp_path, affected_config="[affected_tests]\ndepth = 3\n"
+    )
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines()[-1].startswith("pytest:-q test/test_app.py")
+    assert (tmp_path / "affected.args").read_text().strip().endswith("--depth 3")
+
+
+def test_affected_selection_falls_back_on_timeout(tmp_path: Path) -> None:
+    env, calls, _ = setup_affected_project(
+        tmp_path,
+        affected_config="[affected_tests]\ntimeout_seconds = 1\n",
+    )
+    env["SWARMFORGE_TEST_CODEGRAPH_SLEEP"] = "2"
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines()[-1] == "pytest:-q"
+
+
+@pytest.mark.parametrize(
+    ("create_index", "config"),
+    [
+        (False, ""),
+        (True, "[affected_tests]\nenabled = false\n"),
+        (True, "[affected_tests]\nenabled = 'invalid'\n"),
+    ],
+)
+def test_affected_selection_falls_back_when_unavailable_or_disabled(
+    tmp_path: Path, create_index: bool, config: str
+) -> None:
+    env, calls, _ = setup_affected_project(
+        tmp_path, create_index=create_index, affected_config=config
+    )
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines()[-1] == "pytest:-q"
+
+
+def test_affected_selection_falls_back_without_python_changes(tmp_path: Path) -> None:
+    env, calls, _ = setup_affected_project(tmp_path)
+    (tmp_path / "src/app.py").write_text("VALUE = 1\n")
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines()[-1] == "pytest:-q"
+
+
+def test_configured_commands_are_not_rewritten_by_affected_selection(
+    tmp_path: Path,
+) -> None:
+    env, calls, _ = setup_affected_project(
+        tmp_path,
+        affected_config=(
+            "[commands]\nstop = [['pytest', '-q', 'configured_test.py']]\n"
+        ),
+    )
+
+    result = gate(tmp_path, "--stop", env)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert calls.read_text().splitlines() == ["pytest:-q configured_test.py"]
