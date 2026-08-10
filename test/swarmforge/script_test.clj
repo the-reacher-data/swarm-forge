@@ -150,6 +150,56 @@
       (finally
         (fs/delete-tree root)))))
 
+(deftest launcher-prepares-codegraph-only-with-root-consent
+  (let [root (tmp-dir)
+        fake-bin (fs/path root "bin")
+        calls (fs/path root "codegraph.calls")
+        coder-worktree (fs/path root ".worktrees/coder")
+        env {"PATH" (str fake-bin ":" (System/getenv "PATH"))
+             "SWARMFORGE_TEST_CODEGRAPH_CALLS" (str calls)}]
+    (try
+      (init-repo! root)
+      (write-file (fs/path root "swarmforge/constitution.prompt") "constitution\n")
+      (write-file (fs/path root "swarmforge/swarmforge.conf")
+                  "window planner codex master\nwindow coder codex coder\n")
+      (write-file (fs/path root "swarmforge/roles/planner.prompt") "planner\n")
+      (write-file (fs/path root "swarmforge/roles/coder.prompt") "coder\n")
+      (write-file (fs/path fake-bin "codegraph")
+                  (str "#!/bin/sh\n"
+                       "printf '%s\\n' \"$*\" >> \"$SWARMFORGE_TEST_CODEGRAPH_CALLS\"\n"
+                       "mkdir -p \"$3/.codegraph\"\n"))
+      (run {:dir root} "chmod" "+x" (str (fs/path fake-bin "codegraph")))
+      (run {:dir root :env env}
+           (script "swarmforge.bb") "--test-prepare-worktrees" (str root))
+      (is (not (fs/exists? calls)))
+
+      (fs/create-dirs (fs/path root ".codegraph"))
+      (run {:dir root :env env}
+           (script "swarmforge.bb") "--test-prepare-worktrees" (str root))
+      (run {:dir root :env env}
+           (script "swarmforge.bb") "--test-prepare-worktrees" (str root))
+      (is (= [(str "init -i " coder-worktree)]
+             (str/split-lines (slurp (str calls)))))
+
+      (let [failed-worktree (fs/path root ".worktrees/failed")]
+        (write-file (fs/path fake-bin "codegraph") "#!/bin/sh\nexit 7\n")
+        (run {:dir root} "chmod" "+x" (str (fs/path fake-bin "codegraph")))
+        (let [result (run {:dir root :env env}
+                          (script "swarmforge.bb")
+                          "--test-prepare-codegraph" (str root) (str failed-worktree))]
+          (is (= 0 (:exit result)))
+          (is (str/includes? (:out result) "CodeGraph preparation failed"))))
+
+      (let [missing-worktree (fs/path root ".worktrees/missing-cli")
+            bb-command (str/trim (:out (run {:dir root} "sh" "-c" "command -v bb")))
+            result (run {:dir root :env {"PATH" "/usr/bin:/bin"}}
+                        bb-command (script "swarmforge.bb")
+                        "--test-prepare-codegraph" (str root) (str missing-worktree))]
+        (is (= 0 (:exit result)))
+        (is (str/includes? (:out result) "CodeGraph preparation skipped")))
+      (finally
+        (fs/delete-tree root)))))
+
 (deftest swarmforge-launcher-accepts-backend-instances-and-lazy-windows
   (let [root (tmp-dir)]
     (try
