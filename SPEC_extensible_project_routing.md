@@ -193,3 +193,16 @@ own module; also cover transport in `test_gate.py`):
 - `planner.prompt` updated; templates present but unregistered.
 - Full gate (`ruff check`, `ruff format --check`, typing if configured,
   `pytest -q`) passes.
+
+## 9. Required E2E daemon regression
+
+- On macOS, run the real `./swarm` launcher with no terminal backend inside a
+  short-lived process group, let the launcher exit, then clean that process
+  group before queuing a handoff.
+- The detached handoff daemon must remain alive and deliver the handoff queued
+  after launcher cleanup; a stale PID file is a failure.
+- Fix only launcher detachment. Keep the existing supervised `handoffd.bb`
+  implementation unchanged.
+- `specifier`, `hardener` and `qa` are bundled opt-in role prompts: verify each
+  can be declared with `lazy-window`. They are not live registry entries.
+  `data-engineer` and `ui-reviewer` remain templates only.

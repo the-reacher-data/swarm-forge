@@ -81,6 +81,12 @@ Add a registry entry and matching `lazy-window` only for specialists the target
 repository genuinely needs. Unselected specialists consume no startup model
 tokens.
 
+`specifier`, `hardener`, and `qa` ship as opt-in role prompts and can be added
+to `swarmforge.conf` with `lazy-window` plus a matching
+`project-agents.toml` entry. They are not registered or started by default.
+`data-engineer` and `ui-reviewer` under `swarmforge/roles/templates/` are
+templates only; copy or adapt one before registering it.
+
 ## Tests
 
 ```sh
