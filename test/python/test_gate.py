@@ -54,8 +54,7 @@ def setup_affected_project(
 ) -> tuple[dict[str, str], Path, Path]:
     init_repo(root)
     (root / "pyproject.toml").write_text(
-        "[project]\nname = 'sample'\nversion = '0.1.0'\n\n"
-        "[tool.pytest.ini_options]\n"
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n\n[tool.pytest.ini_options]\n"
     )
     if affected_config:
         (root / "swarmforge").mkdir()
@@ -79,20 +78,20 @@ def setup_affected_project(
     fake_bin = root / "bin"
     write_executable(
         fake_bin / "ruff",
-        "#!/bin/sh\nprintf 'ruff:%s\\n' \"$*\" >> \"$SWARMFORGE_TEST_CALLS\"\n",
+        '#!/bin/sh\nprintf \'ruff:%s\\n\' "$*" >> "$SWARMFORGE_TEST_CALLS"\n',
     )
     write_executable(
         fake_bin / "pytest",
-        "#!/bin/sh\nprintf 'pytest:%s\\n' \"$*\" >> \"$SWARMFORGE_TEST_CALLS\"\n",
+        '#!/bin/sh\nprintf \'pytest:%s\\n\' "$*" >> "$SWARMFORGE_TEST_CALLS"\n',
     )
     write_executable(
         fake_bin / "codegraph",
         "#!/bin/sh\n"
-        "printf '%s\\n' \"$*\" > \"$SWARMFORGE_TEST_CODEGRAPH_ARGS\"\n"
-        "cat > \"$SWARMFORGE_TEST_CODEGRAPH_STDIN\"\n"
-        "sleep \"${SWARMFORGE_TEST_CODEGRAPH_SLEEP:-0}\"\n"
+        'printf \'%s\\n\' "$*" > "$SWARMFORGE_TEST_CODEGRAPH_ARGS"\n'
+        'cat > "$SWARMFORGE_TEST_CODEGRAPH_STDIN"\n'
+        'sleep "${SWARMFORGE_TEST_CODEGRAPH_SLEEP:-0}"\n'
         "printf '%s' \"$SWARMFORGE_TEST_CODEGRAPH_OUTPUT\"\n"
-        "exit \"${SWARMFORGE_TEST_CODEGRAPH_EXIT:-0}\"\n",
+        'exit "${SWARMFORGE_TEST_CODEGRAPH_EXIT:-0}"\n',
     )
     env = os.environ | {
         "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
