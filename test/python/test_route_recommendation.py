@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+import argparse
+
+import pytest
+
 from swarmforge.gates.registry import RegisteredAgent
-from swarmforge.gates.route_recommendation import validate_recommendation
+from swarmforge.gates.route_recommendation import (
+    _read_document,
+    validate_recommendation,
+)
 
 
 def registered(name: str) -> RegisteredAgent:
@@ -57,3 +64,23 @@ def test_revalidation_ignores_malformed_or_wrong_commit_payload() -> None:
         )
         is None
     )
+
+
+def test_revalidation_rejects_unbounded_reviewer_names() -> None:
+    name = "a" * 65
+
+    assert (
+        validate_recommendation(
+            recommendation([name]),
+            expected_commit="a" * 10,
+            registered_agents={name: registered(name)},
+        )
+        is None
+    )
+
+
+def test_transport_rejects_oversized_payload_before_json_parsing() -> None:
+    args = argparse.Namespace(path=None, payload=" " * 4_097)
+
+    with pytest.raises(ValueError, match="too large"):
+        _read_document(args)

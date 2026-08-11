@@ -21,7 +21,14 @@ ALLOWED_AGENT_KEYS = {
 ALLOWED_ROUTING_KEYS = {"paths", "signals", "priority", "mandatory"}
 ALLOWED_SIGNALS = {"lockfile", "concurrency", "public-api", "size"}
 ALLOWED_MODES = {"lazy"}
-ROLE_PATTERN = re.compile(r"[a-z][a-z0-9-]*\Z")
+MAX_AGENTS = 32
+MAX_IDENTIFIER_LENGTH = 64
+MAX_PROMPT_LENGTH = 256
+MAX_ROUTING_PATHS = 32
+MAX_ROUTING_PATH_LENGTH = 256
+MAX_TAGS = 16
+MAX_TAG_LENGTH = 64
+ROLE_PATTERN = re.compile(r"[a-z][a-z0-9-]{0,63}\Z")
 
 
 @dataclass(frozen=True)
@@ -49,16 +56,25 @@ class RegistryResult:
     errors: dict[str, str]
 
 
-def _string_list(value: object) -> tuple[str, ...] | None:
+def _string_list(
+    value: object, *, max_items: int, max_length: int
+) -> tuple[str, ...] | None:
     if not isinstance(value, list) or not all(
-        isinstance(item, str) and item for item in value
+        isinstance(item, str) and item and len(item) <= max_length for item in value
     ):
+        return None
+    if len(value) > max_items:
         return None
     return tuple(value)
 
 
 def _valid_prompt(prompt: object) -> bool:
-    if not isinstance(prompt, str) or not prompt or "\\" in prompt:
+    if (
+        not isinstance(prompt, str)
+        or not prompt
+        or len(prompt) > MAX_PROMPT_LENGTH
+        or "\\" in prompt
+    ):
         return False
     path = PurePosixPath(prompt)
     return (
@@ -76,10 +92,18 @@ def _routing(value: object) -> tuple[RoutingRule | None, str | None]:
         return None, "invalid-routing"
     if not set(value).issubset(ALLOWED_ROUTING_KEYS):
         return None, "unknown-routing-key"
-    paths = _string_list(value.get("paths", []))
+    paths = _string_list(
+        value.get("paths", []),
+        max_items=MAX_ROUTING_PATHS,
+        max_length=MAX_ROUTING_PATH_LENGTH,
+    )
     if paths is None:
         return None, "invalid-routing-paths"
-    signals = _string_list(value.get("signals", []))
+    signals = _string_list(
+        value.get("signals", []),
+        max_items=len(ALLOWED_SIGNALS),
+        max_length=MAX_IDENTIFIER_LENGTH,
+    )
     if signals is None or not set(signals).issubset(ALLOWED_SIGNALS):
         return None, "invalid-routing-signal"
     priority = value.get("priority", 50)
@@ -102,11 +126,18 @@ def validate_registry(
     raw_agents = document.get("agents", {})
     if not isinstance(raw_agents, Mapping):
         return RegistryResult({}, {"registry": "invalid-agents"})
+    if len(raw_agents) > MAX_AGENTS:
+        return RegistryResult({}, {"registry": "too-many-agents"})
 
     agents: dict[str, RegisteredAgent] = {}
     errors: dict[str, str] = {}
-    for name in sorted(raw_agents):
+    for index, name in enumerate(sorted(raw_agents)):
         raw = raw_agents[name]
+        error_key = (
+            name
+            if isinstance(name, str) and len(name) <= MAX_IDENTIFIER_LENGTH
+            else f"agent-{index + 1}"
+        )
         reason: str | None = None
         if not isinstance(name, str) or ROLE_PATTERN.fullmatch(name) is None:
             reason = "invalid-name"
@@ -116,17 +147,23 @@ def validate_registry(
             reason = "unknown-agent-key"
 
         if reason is not None:
-            errors[str(name)] = reason
+            errors[error_key] = reason
             continue
         assert isinstance(raw, Mapping)
         role = raw.get("role")
         backend = raw.get("backend_instance")
         mode = raw.get("mode", "lazy")
         prompt = raw.get("prompt")
-        tags = _string_list(raw.get("tags", []))
+        tags = _string_list(
+            raw.get("tags", []), max_items=MAX_TAGS, max_length=MAX_TAG_LENGTH
+        )
         if not isinstance(role, str) or ROLE_PATTERN.fullmatch(role) is None:
             reason = "invalid-role"
-        elif not isinstance(backend, str) or backend not in authorized_backends:
+        elif (
+            not isinstance(backend, str)
+            or len(backend) > MAX_IDENTIFIER_LENGTH
+            or backend not in authorized_backends
+        ):
             reason = "unauthorized-backend"
         elif not isinstance(mode, str) or mode not in ALLOWED_MODES:
             reason = "invalid-mode"
@@ -148,7 +185,7 @@ def validate_registry(
                     routing=routing,
                 )
         if reason is not None:
-            errors[name] = reason
+            errors[error_key] = reason
     return RegistryResult(agents, errors)
 
 

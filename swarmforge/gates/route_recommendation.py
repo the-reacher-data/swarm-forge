@@ -30,6 +30,8 @@ REASONS = {
     "signal:tests-docs-only",
 }
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}\Z")
+MAX_RECOMMENDATION_CHARS = 4_096
+MAX_REVIEWER_LENGTH = 64
 
 
 def validate_recommendation(
@@ -72,7 +74,12 @@ def validate_recommendation(
     if (
         not isinstance(reviewers, list)
         or len(reviewers) > 2
-        or not all(isinstance(reviewer, str) for reviewer in reviewers)
+        or not all(
+            isinstance(reviewer, str)
+            and reviewer
+            and len(reviewer) <= MAX_REVIEWER_LENGTH
+            for reviewer in reviewers
+        )
         or len(set(reviewers)) != len(reviewers)
         or route in reviewers
     ):
@@ -91,9 +98,10 @@ def validate_recommendation(
 
 
 def _read_document(args: argparse.Namespace) -> Any:
-    if args.path is not None:
-        return json.loads(args.path.read_text())
-    return json.loads(args.payload)
+    payload = args.path.read_text() if args.path is not None else args.payload
+    if len(payload) > MAX_RECOMMENDATION_CHARS:
+        raise ValueError("route recommendation is too large")
+    return json.loads(payload)
 
 
 def main() -> int:
@@ -112,7 +120,7 @@ def main() -> int:
             expected_commit=args.commit,
             registered_agents=registry.agents,
         )
-    except (OSError, json.JSONDecodeError):
+    except (OSError, ValueError):
         recommendation = None
     if recommendation is not None:
         print(json.dumps(recommendation, separators=(",", ":")))

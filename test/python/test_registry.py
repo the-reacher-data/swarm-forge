@@ -122,3 +122,34 @@ signals = ["network"]
         "unknown-key": "unknown-routing-key",
         "unknown-signal": "invalid-routing-signal",
     }
+
+
+def test_registry_bounds_agent_names_and_routing_lists(tmp_path: Path) -> None:
+    long_name = "a" * 65
+    write_registry_project(
+        tmp_path,
+        f"""
+[agents.{long_name}]
+role = "valid"
+backend_instance = "authorized"
+mode = "lazy"
+prompt = "swarmforge/roles/valid.prompt"
+
+[agents.valid]
+role = "valid"
+backend_instance = "authorized"
+mode = "lazy"
+prompt = "swarmforge/roles/valid.prompt"
+
+[agents.valid.routing]
+paths = {["src/**"] * 33!r}
+""".strip(),
+    )
+
+    result = load_registry(tmp_path)
+
+    assert result.agents == {}
+    assert result.errors == {
+        "agent-1": "invalid-name",
+        "valid": "invalid-routing-paths",
+    }

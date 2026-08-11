@@ -79,7 +79,9 @@ agent_catalog.py --root .
 
 Add a registry entry and matching `lazy-window` only for specialists the target
 repository genuinely needs. Unselected specialists consume no startup model
-tokens.
+tokens. The registry is deliberately bounded (32 agents, short identifiers and
+routing lists); transported recommendations are capped at two reviewers and
+4 KiB.
 
 `specifier`, `hardener`, and `qa` ship as opt-in role prompts and can be added
 to `swarmforge.conf` with `lazy-window` plus a matching
