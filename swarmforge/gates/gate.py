@@ -259,6 +259,8 @@ def record_gate_event(
     test_selection: str | None = None,
     test_selection_reason: str | None = None,
     affected_test_count: int | None = None,
+    route: str | None = None,
+    risk_score: int | None = None,
 ) -> None:
     duration_ms = int((time.monotonic() - started_at) * 1_000)
     try:
@@ -279,6 +281,8 @@ def record_gate_event(
             test_selection=test_selection,
             test_selection_reason=test_selection_reason,
             affected_test_count=affected_test_count,
+            route=route,
+            risk_score=risk_score,
         )
     except Exception:
         pass
@@ -422,7 +426,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         commands = configured or default_commands(root, mode)
     except (OSError, tomllib.TOMLDecodeError, ValueError) as error:
         print(f"GATE_CONFIG_FAILED: {error}", file=sys.stderr)
-        write_route_artifacts(
+        route, risk_score = write_route_artifacts(
             root,
             mode=mode,
             result="config_failed",
@@ -434,6 +438,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             result="config_failed",
             started_at=started_at,
             tool_output_bytes_exposed=0,
+            route=route,
+            risk_score=risk_score,
         )
         return 2
     changed_files = changed_python_files(root) if mode == "fast" else []
@@ -458,7 +464,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         timeout_seconds,
         max_bytes,
     )
-    write_route_artifacts(root, mode=mode, result=result, config=config)
+    route, risk_score = write_route_artifacts(
+        root, mode=mode, result=result, config=config
+    )
     record_gate_event(
         root,
         mode=mode,
@@ -468,6 +476,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         test_selection=test_selection,
         test_selection_reason=test_selection_reason,
         affected_test_count=affected_test_count,
+        route=route,
+        risk_score=risk_score,
     )
     return exit_code
 

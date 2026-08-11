@@ -46,6 +46,7 @@ TEST_SELECTION_REASONS = {
     "invalid_output",
     "no_tests",
 }
+ROUTES = {"coder", "done", "architect", "security-reviewer"}
 
 
 def _bounded(value: str | None) -> str | None:
@@ -117,6 +118,8 @@ def record_event(
     test_selection: str | None = None,
     test_selection_reason: str | None = None,
     affected_test_count: int | None = None,
+    route: str | None = None,
+    risk_score: int | None = None,
 ) -> bool:
     """Append one event, returning false when telemetry is disabled or dropped."""
     if event not in EVENTS or result not in RESULTS:
@@ -138,6 +141,8 @@ def record_event(
             return False
         if test_selection_reason not in TEST_SELECTION_REASONS | {None}:
             return False
+        if route not in ROUTES | {None}:
+            return False
         if test_selection is None and (
             test_selection_reason is not None or affected_test_count is not None
         ):
@@ -151,6 +156,8 @@ def record_event(
             test_selection,
             test_selection_reason,
             affected_test_count,
+            route,
+            risk_score,
         )
     ):
         return False
@@ -181,6 +188,8 @@ def record_event(
             record["test_selection"] = test_selection
             record["test_selection_reason"] = test_selection_reason
             record["affected_test_count"] = _optional_integer(affected_test_count)
+            record["route"] = route
+            record["risk_score"] = _optional_integer(risk_score)
         payload = (
             json.dumps(record, sort_keys=False, separators=(",", ":")) + "\n"
         ).encode()
@@ -221,6 +230,8 @@ def _parser() -> argparse.ArgumentParser:
         "--test-selection-reason", choices=sorted(TEST_SELECTION_REASONS)
     )
     record.add_argument("--affected-test-count", type=int)
+    record.add_argument("--route", choices=sorted(ROUTES))
+    record.add_argument("--risk-score", type=int)
     return parser
 
 
@@ -240,6 +251,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             test_selection=_bounded(args.test_selection),
             test_selection_reason=_bounded(args.test_selection_reason),
             affected_test_count=args.affected_test_count,
+            route=_bounded(args.route),
+            risk_score=args.risk_score,
         )
     except Exception:
         pass

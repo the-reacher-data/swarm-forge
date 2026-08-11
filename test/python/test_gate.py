@@ -470,6 +470,10 @@ def test_pre_handoff_writes_deterministic_low_risk_route_artifacts(
     assert manifest["gates"]["pre-handoff"] == "pass"
     assert route["route"] == "done"
     assert route["reasons"] == ["signal:tests-docs-only"]
+    recorded = telemetry_events(tmp_path)
+    assert recorded[-1]["route"] == "done"
+    assert recorded[-1]["risk_score"] == 0
+    assert "reasons" not in recorded[-1]
 
 
 def test_failed_security_gate_routes_back_to_coder(tmp_path: Path) -> None:
