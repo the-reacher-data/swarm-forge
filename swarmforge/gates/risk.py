@@ -7,7 +7,10 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import fnmatch
 
-from swarmforge.gates.manifest import DEFAULT_SENSITIVE_PATTERNS, Manifest
+try:
+    from swarmforge.gates.manifest import DEFAULT_SENSITIVE_PATTERNS, Manifest
+except ModuleNotFoundError:  # Direct gate execution resolves sibling modules.
+    from manifest import DEFAULT_SENSITIVE_PATTERNS, Manifest  # type: ignore[no-redef]
 
 
 SCHEMA_VERSION = 1

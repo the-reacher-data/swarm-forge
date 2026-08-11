@@ -256,6 +256,7 @@ def build_manifest(
     gate_result: str,
     max_paths: int = 50,
     sensitive_patterns: Sequence[str] = DEFAULT_SENSITIVE_PATTERNS,
+    affected_enabled: bool = True,
     affected_timeout_seconds: int = 30,
     affected_depth: int | None = None,
 ) -> Manifest:
@@ -275,11 +276,15 @@ def build_manifest(
     changed_python = [
         path for path in all_paths if path.endswith(".py") and (root / path).is_file()
     ]
-    impact = codegraph_impact(
-        root,
-        changed_python,
-        timeout_seconds=affected_timeout_seconds,
-        depth=affected_depth,
+    impact = (
+        codegraph_impact(
+            root,
+            changed_python,
+            timeout_seconds=affected_timeout_seconds,
+            depth=affected_depth,
+        )
+        if affected_enabled
+        else None
     )
     document: dict[str, object] = {
         "schema_version": SCHEMA_VERSION,

@@ -106,6 +106,36 @@ def setup_affected_project(
     return env, calls, stdin_log
 
 
+def setup_route_project(root: Path, *, command: str = "pass", risk: str = "") -> None:
+    init_repo(root)
+    run("git", "branch", "-M", "main", cwd=root)
+    (root / ".gitignore").write_text(".swarmforge/\n")
+    (root / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+    (root / "swarmforge").mkdir()
+    (root / "swarmforge/python-gates.toml").write_text(
+        f"[commands]\npre_handoff = [[{json.dumps(sys.executable)}, '-c', "
+        f"{json.dumps(command)}]]\n"
+        f"pre_complete = [[{json.dumps(sys.executable)}, '-c', "
+        f"{json.dumps(command)}]]\n"
+        f"{risk}"
+    )
+    (root / "docs").mkdir()
+    (root / "docs/routing.md").write_text("initial\n")
+    run("git", "add", ".", cwd=root)
+    run("git", "commit", "-q", "-m", "initial", cwd=root)
+    (root / "docs/routing.md").write_text("updated\n")
+
+
+def route_artifacts(root: Path) -> tuple[dict[str, object], dict[str, object]]:
+    artifact_dir = root / ".swarmforge/artifacts/route"
+    return (
+        json.loads((artifact_dir / "manifest.json").read_text()),
+        json.loads((artifact_dir / "route.json").read_text()),
+    )
+
+
 def test_non_python_project_is_a_quiet_noop(tmp_path: Path) -> None:
     result = gate(tmp_path, "--fast")
 
@@ -419,3 +449,79 @@ def test_configured_commands_are_not_rewritten_by_affected_selection(
     assert recorded["test_selection"] is None
     assert recorded["test_selection_reason"] is None
     assert recorded["affected_test_count"] is None
+
+
+def test_pre_handoff_writes_deterministic_low_risk_route_artifacts(
+    tmp_path: Path,
+) -> None:
+    setup_route_project(tmp_path)
+
+    first = gate(tmp_path, "--pre-handoff")
+    artifact_dir = tmp_path / ".swarmforge/artifacts/route"
+    first_manifest = (artifact_dir / "manifest.json").read_bytes()
+    first_route = (artifact_dir / "route.json").read_bytes()
+    second = gate(tmp_path, "--pre-handoff")
+    manifest, route = route_artifacts(tmp_path)
+
+    assert first.returncode == second.returncode == 0
+    assert first.stdout == first.stderr == second.stdout == second.stderr == ""
+    assert (artifact_dir / "manifest.json").read_bytes() == first_manifest
+    assert (artifact_dir / "route.json").read_bytes() == first_route
+    assert manifest["gates"]["pre-handoff"] == "pass"
+    assert route["route"] == "done"
+    assert route["reasons"] == ["signal:tests-docs-only"]
+
+
+def test_failed_security_gate_routes_back_to_coder(tmp_path: Path) -> None:
+    setup_route_project(tmp_path, command="raise SystemExit(1)")
+    sensitive = tmp_path / "src/auth/token.py"
+    sensitive.parent.mkdir(parents=True)
+    sensitive.write_text("TOKEN = 'private'\n")
+
+    result = gate(tmp_path, "--pre-complete")
+    manifest, route = route_artifacts(tmp_path)
+
+    assert result.returncode == 2
+    assert manifest["paths"] == ["docs/routing.md"]
+    assert route["route"] == "coder"
+    assert route["reasons"] == ["class:security", "gate:failed"]
+    assert "token.py" not in json.dumps(manifest)
+    assert "token.py" not in json.dumps(route)
+
+
+def test_invalid_risk_config_uses_defaults_without_changing_gate_exit(
+    tmp_path: Path,
+) -> None:
+    setup_route_project(tmp_path, risk="\n[risk]\nmax_paths = -1\n")
+    auth = tmp_path / "src/auth/handler.py"
+    auth.parent.mkdir(parents=True)
+    auth.write_text("VALUE = 1\n")
+
+    result = gate(tmp_path, "--pre-handoff")
+    _, route = route_artifacts(tmp_path)
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert route["route"] == "security-reviewer"
+
+
+def test_route_artifact_failure_is_silent_and_non_blocking(tmp_path: Path) -> None:
+    setup_route_project(tmp_path)
+    blocker = tmp_path / ".swarmforge/artifacts/route"
+    blocker.parent.mkdir(parents=True)
+    blocker.write_text("not a directory")
+
+    result = gate(tmp_path, "--pre-handoff")
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert blocker.is_file()
+
+
+def test_fast_gate_does_not_write_route_artifacts(tmp_path: Path) -> None:
+    setup_route_project(tmp_path)
+
+    result = gate(tmp_path, "--fast")
+
+    assert result.returncode == 0
+    assert not (tmp_path / ".swarmforge/artifacts/route").exists()
