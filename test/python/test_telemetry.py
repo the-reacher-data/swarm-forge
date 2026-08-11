@@ -64,6 +64,8 @@ def test_record_writes_ordered_schema_and_resolves_backend(
         "test_selection",
         "test_selection_reason",
         "affected_test_count",
+        "route",
+        "risk_score",
     ]
     assert event == {
         "schema_version": 1,
@@ -82,7 +84,39 @@ def test_record_writes_ordered_schema_and_resolves_backend(
         "test_selection": None,
         "test_selection_reason": None,
         "affected_test_count": None,
+        "route": None,
+        "risk_score": None,
     }
+
+
+def test_gate_route_fields_are_bounded_enums_and_counts(tmp_path: Path) -> None:
+    metrics = load_metrics()
+
+    assert metrics.record_event(
+        tmp_path,
+        event="gate",
+        result="pass",
+        gate_failure_count=0,
+        route="architect",
+        risk_score=7,
+    )
+    assert events(tmp_path)[0]["route"] == "architect"
+    assert events(tmp_path)[0]["risk_score"] == 7
+    assert not metrics.record_event(
+        tmp_path,
+        event="gate",
+        result="pass",
+        gate_failure_count=0,
+        route="arbitrary-reviewer",
+        risk_score=7,
+    )
+    assert not metrics.record_event(
+        tmp_path,
+        event="task_accepted",
+        result="accepted",
+        route="done",
+        risk_score=0,
+    )
 
 
 def test_disabled_and_invalid_configuration_do_not_create_metrics(

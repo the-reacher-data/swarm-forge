@@ -16,6 +16,13 @@ import time
 import tomllib
 import uuid
 
+try:
+    from swarmforge.gates import manifest as manifest_module
+    from swarmforge.gates import risk as risk_module
+except ModuleNotFoundError:  # Direct execution resolves sibling modules.
+    import manifest as manifest_module  # type: ignore[no-redef]
+    import risk as risk_module  # type: ignore[no-redef]
+
 
 DEFAULT_MAX_OUTPUT_BYTES = 8_192
 DEFAULT_TIMEOUT_SECONDS = 180
@@ -252,6 +259,8 @@ def record_gate_event(
     test_selection: str | None = None,
     test_selection_reason: str | None = None,
     affected_test_count: int | None = None,
+    route: str | None = None,
+    risk_score: int | None = None,
 ) -> None:
     duration_ms = int((time.monotonic() - started_at) * 1_000)
     try:
@@ -272,9 +281,60 @@ def record_gate_event(
             test_selection=test_selection,
             test_selection_reason=test_selection_reason,
             affected_test_count=affected_test_count,
+            route=route,
+            risk_score=risk_score,
         )
     except Exception:
         pass
+
+
+def write_route_artifacts(
+    root: Path,
+    *,
+    mode: str,
+    result: str,
+    config: dict[str, object],
+) -> tuple[str | None, int | None]:
+    """Best-effort route generation that never affects the enclosing gate."""
+    if mode not in {"pre-handoff", "pre-complete"}:
+        return None, None
+    try:
+        risk_config = risk_module.load_risk_config(config)
+        affected = affected_test_settings(config)
+        if affected is None:
+            affected_enabled, affected_timeout, affected_depth = (
+                False,
+                DEFAULT_AFFECTED_TIMEOUT_SECONDS,
+                None,
+            )
+        else:
+            affected_enabled, affected_timeout, affected_depth = affected
+        built = manifest_module.build_manifest(
+            root,
+            gate_mode=mode,
+            gate_result=result,
+            max_paths=risk_config.max_paths,
+            sensitive_patterns=risk_config.sensitive_patterns,
+            affected_enabled=affected_enabled,
+            affected_timeout_seconds=affected_timeout,
+            affected_depth=affected_depth,
+        )
+        route = risk_module.route_manifest(built, risk_config)
+        artifact_dir = root / ".swarmforge" / "artifacts" / "route"
+        manifest_module.atomic_write(
+            artifact_dir / "manifest.json", manifest_module.serialize_manifest(built)
+        )
+        manifest_module.atomic_write(
+            artifact_dir / "route.json",
+            json.dumps(route, sort_keys=False, separators=(",", ":")).encode(),
+        )
+        route_name = route.get("route")
+        score = route.get("score")
+        if not isinstance(route_name, str) or not isinstance(score, int):
+            raise ValueError("invalid route output")
+        return route_name, score
+    except Exception:
+        return None, None
 
 
 def run_commands(
@@ -366,12 +426,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         commands = configured or default_commands(root, mode)
     except (OSError, tomllib.TOMLDecodeError, ValueError) as error:
         print(f"GATE_CONFIG_FAILED: {error}", file=sys.stderr)
+        route, risk_score = write_route_artifacts(
+            root,
+            mode=mode,
+            result="config_failed",
+            config={},
+        )
         record_gate_event(
             root,
             mode=mode,
             result="config_failed",
             started_at=started_at,
             tool_output_bytes_exposed=0,
+            route=route,
+            risk_score=risk_score,
         )
         return 2
     changed_files = changed_python_files(root) if mode == "fast" else []
@@ -396,6 +464,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         timeout_seconds,
         max_bytes,
     )
+    route, risk_score = write_route_artifacts(
+        root, mode=mode, result=result, config=config
+    )
     record_gate_event(
         root,
         mode=mode,
@@ -405,6 +476,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         test_selection=test_selection,
         test_selection_reason=test_selection_reason,
         affected_test_count=affected_test_count,
+        route=route,
+        risk_score=risk_score,
     )
     return exit_code
 

@@ -1,0 +1,133 @@
+from __future__ import annotations
+
+from swarmforge.gates.manifest import Manifest
+from swarmforge.gates.risk import DEFAULT_CONFIG, load_risk_config, route_manifest
+
+
+def built_manifest(
+    paths: tuple[str, ...],
+    *,
+    files_changed: int | None = None,
+    insertions: int = 0,
+    gates: dict[str, str] | None = None,
+    concurrency: bool = False,
+) -> Manifest:
+    return Manifest(
+        document={
+            "schema_version": 1,
+            "commit": "a" * 40,
+            "base": "b" * 40,
+            "diff": {
+                "files_changed": len(paths) if files_changed is None else files_changed,
+                "insertions": insertions,
+                "deletions": 0,
+            },
+            "paths": list(paths),
+            "gates": gates or {"pre-handoff": "pass"},
+            "codegraph_impact": None,
+            "truncated": False,
+        },
+        all_paths=paths,
+        concurrency_signal=concurrency,
+    )
+
+
+def test_tests_and_docs_only_force_done() -> None:
+    result = route_manifest(
+        built_manifest(("test/python/test_api.py", "docs/routing.md"))
+    )
+
+    assert result == {
+        "schema_version": 1,
+        "route": "done",
+        "score": 0,
+        "reasons": ["signal:tests-docs-only"],
+        "commit": "a" * 40,
+    }
+
+
+def test_large_change_routes_to_architect() -> None:
+    result = route_manifest(
+        built_manifest(("src/app.py",), files_changed=11),
+    )
+
+    assert result["route"] == "architect"
+    assert result["score"] >= DEFAULT_CONFIG.architect_threshold
+    assert result["reasons"] == ["signal:large-change"]
+
+
+def test_sensitive_filtered_path_still_routes_to_security_reviewer() -> None:
+    manifest = built_manifest(("config/secret-token.env",))
+    manifest.document["paths"] = []
+
+    result = route_manifest(manifest)
+
+    assert result["route"] == "security-reviewer"
+    assert result["reasons"] == ["class:security"]
+
+
+def test_failed_gate_has_precedence_over_security() -> None:
+    result = route_manifest(
+        built_manifest(
+            ("src/auth/token.py",), gates={"pre-handoff": "setup_failed"}
+        )
+    )
+
+    assert result["route"] == "coder"
+    assert result["reasons"] == ["class:security", "gate:failed"]
+
+
+def test_migration_class_routes_to_architect() -> None:
+    result = route_manifest(built_manifest(("alembic/versions/001_users.py",)))
+
+    assert result["route"] == "architect"
+    assert result["reasons"] == ["class:migrations"]
+
+
+def test_signals_are_weighted_and_reasons_are_sorted() -> None:
+    config = load_risk_config(
+        {
+            "risk": {
+                "architect_threshold": 20,
+                "weights": {
+                    "lockfile": 1,
+                    "concurrency": 2,
+                    "public-api": 3,
+                    "size": 4,
+                },
+                "security_patterns": [],
+                "migration_patterns": [],
+                "public_api_patterns": [],
+                "sensitive_patterns": [],
+                "max_paths": 10,
+            }
+        }
+    )
+    result = route_manifest(
+        built_manifest(
+            ("pyproject.toml", "swarmforge/gates/new.py"), concurrency=True
+        ),
+        config,
+    )
+
+    assert result["route"] == "done"
+    assert result["score"] == 6
+    assert result["reasons"] == [
+        "signal:concurrency",
+        "signal:lockfile",
+        "signal:public-api",
+    ]
+
+
+def test_any_invalid_risk_value_discards_the_whole_table() -> None:
+    config = load_risk_config(
+        {
+            "risk": {
+                "architect_threshold": 99,
+                "weights": {"size": -1},
+                "max_paths": 2,
+            }
+        }
+    )
+
+    assert config == DEFAULT_CONFIG
