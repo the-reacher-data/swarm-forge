@@ -475,6 +475,12 @@
     (.redirectErrorStream builder true)
     (.start builder)))
 
+(defn detach-prefix []
+  (if (= "Darwin" (uname))
+    ["python3" "-c"
+     "import os,sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])"]
+    (if (command-exists? "setsid") ["setsid"] ["nohup"])))
+
 (defn start-handoff-daemon! [ctx]
   (fs/create-dirs (:daemon-dir ctx))
   (fs/delete-if-exists (fs/path (:daemon-dir ctx) "stop"))
@@ -482,8 +488,7 @@
         daemon-command (into inhibitor
                              [(str (fs/path (:script-dir ctx) "handoffd.bb"))
                               (str (:working-dir ctx))])
-        detach-prefix (if (command-exists? "setsid") ["setsid"] ["nohup"])
-        command (into detach-prefix daemon-command)]
+        command (into (detach-prefix) daemon-command)]
     (start-detached! command (:handoff-daemon-log ctx))
     (println (str green "Started handoff daemon"
                   (when (seq inhibitor) " with OS sleep prevention")

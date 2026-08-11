@@ -416,33 +416,51 @@
       (finally
         (fs/delete-tree root)))))
 
-(deftest handoff-daemon-survives-short-lived-launcher-parent
+(deftest handoff-daemon-survives-real-non-terminal-launcher
   (let [root (tmp-dir)
         fake-bin (fs/path root "bin")
-        sender (fs/path root "sender")
-        receiver (fs/path root "receiver")
         daemon-dir (fs/path root ".swarmforge/daemon")
         pid-file (fs/path daemon-dir "handoffd.pid")
         stop-file (fs/path daemon-dir "stop")
-        delivered (fs/path receiver ".swarmforge/handoffs/inbox/new/task.handoff")]
+        launcher-pgid-file (fs/path root "launcher.pgid")
+        outbox (fs/path root ".swarmforge/handoffs/outbox/task.handoff")
+        delivered (fs/path root ".swarmforge/handoffs/inbox/new/task.handoff")]
     (try
-      (write-file (fs/path fake-bin "tmux") "#!/bin/sh\nexit 0\n")
-      (run {:dir root} "chmod" "+x" (str (fs/path fake-bin "tmux")))
-      (write-file (fs/path root ".swarmforge/tmux-socket") "fake.sock\n")
-      (write-file (fs/path root ".swarmforge/roles.tsv")
-                  (str "sender\tmaster\t" sender "\tsender-session\tSender\tcodex\ttask\teager\n"
-                       "receiver\treceiver\t" receiver "\treceiver-session\tReceiver\tcodex\ttask\teager\n"))
-      (write-file (fs/path sender ".swarmforge/handoffs/outbox/task.handoff")
-                  (str "id: task-1\nfrom: sender\nto: receiver\npriority: 50\n"
-                       "type: note\nmessage: hello\n\npayload\n"))
-      (run {:dir root
-            :env {"PATH" (str fake-bin ":" (System/getenv "PATH"))
-                  "SWARMFORGE_PREVENT_SLEEP" "0"}}
-           "sh" "-c"
-           (str "bb " (script "swarmforge.bb")
-                " --test-start-handoff-daemon " root))
+      (init-repo! root)
+      (write-file (fs/path root "swarmforge/constitution.prompt") "Constitution.\n")
+      (write-file (fs/path root "swarmforge/swarmforge.conf")
+                  "window planner codex-primary master\n")
+      (write-file (fs/path root "swarmforge/backends.toml")
+                  "[instances.codex-primary]\nkind = \"codex\"\ncommand = [\"codex\"]\n")
+      (write-file (fs/path root "swarmforge/roles/planner.prompt") "Plan.\n")
+      (write-file (fs/path fake-bin "codex") "#!/bin/sh\nexit 0\n")
+      (write-file (fs/path fake-bin "tmux")
+                  (str "#!/bin/sh\n"
+                       "case \"$*\" in\n"
+                       "  *display-message*) printf 'fake.sock,123,%%1\\n' ;;\n"
+                       "  *has-session*) exit 1 ;;\n"
+                       "  *) exit 0 ;;\n"
+                       "esac\n"))
+      (doseq [command ["codex" "tmux"]]
+        (run {:dir root} "chmod" "+x" (str (fs/path fake-bin command))))
+      (let [launcher (run {:dir root
+                           :env {"PATH" (str fake-bin ":" (System/getenv "PATH"))
+                                 "SWARMFORGE_AGENT_START_DELAY_MS" "0"
+                                 "SWARMFORGE_TEST_LAUNCHER_PGID" (str launcher-pgid-file)
+                                 "SWARMFORGE_TERMINAL" "none"}}
+                          "python3" "-c"
+                          (str "import os,sys; os.setpgrp(); "
+                               "open(os.environ['SWARMFORGE_TEST_LAUNCHER_PGID'],'w').write(str(os.getpgrp())); "
+                               "os.execv(sys.argv[1],sys.argv[1:])")
+                          (str (fs/path repo-root "swarm")) (str root))]
+        (is (= 0 (:exit launcher))))
       (is (wait-until 5000 #(fs/exists? pid-file)))
-      (let [pid (str/trim (slurp (str pid-file)))]
+      (let [pid (str/trim (slurp (str pid-file)))
+            launcher-pgid (str/trim (slurp (str launcher-pgid-file)))]
+        (run {:dir root :ok? false} "/bin/kill" "-TERM" (str "-" launcher-pgid))
+        (write-file outbox
+                    (str "id: task-1\nfrom: planner\nto: planner\npriority: 50\n"
+                         "type: note\nmessage: hello\n\npayload\n"))
         (is (process-alive? pid))
         (is (wait-until 5000 #(fs/exists? delivered)))
         (write-file stop-file "")
@@ -453,6 +471,26 @@
         (when (fs/exists? pid-file)
           (let [pid (str/trim (slurp (str pid-file)))]
             (run {:dir root :ok? false} "kill" "-TERM" pid)))
+        (fs/delete-tree root)))))
+
+(deftest optional-specialist-prompts-are-declarable-as-lazy-windows
+  (let [root (tmp-dir)]
+    (try
+      (write-file (fs/path root "swarmforge/constitution.prompt") "Constitution.\n")
+      (write-file (fs/path root "swarmforge/swarmforge.conf")
+                  (str "window planner codex master\n"
+                       "lazy-window specifier codex specifier task\n"
+                       "lazy-window hardener codex hardener batch\n"
+                       "lazy-window qa codex qa task\n"))
+      (doseq [role ["planner" "specifier" "hardener" "qa"]]
+        (write-file (fs/path root "swarmforge/roles" (str role ".prompt"))
+                    (str role "\n")))
+      (let [result (run {:dir root}
+                        (script "swarmforge.bb") "--test-parse" (str root))]
+        (is (str/includes? (:out result) "specifier Specifier"))
+        (is (str/includes? (:out result) "\tswarmforge-hardener\tHardener\tcodex\tbatch\tlazy"))
+        (is (str/includes? (:out result) "\tswarmforge-qa\tQa\tcodex\ttask\tlazy")))
+      (finally
         (fs/delete-tree root)))))
 
 (defn close-swarm []
