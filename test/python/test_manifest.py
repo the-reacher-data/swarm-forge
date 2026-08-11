@@ -77,6 +77,8 @@ def test_manifest_reads_latest_bounded_gate_results(tmp_path: Path) -> None:
         + "\n"
         + json.dumps({"event": "gate", "gate_mode": "pre-handoff", "result": "pass"})
         + "\n"
+        + json.dumps({"event": "gate", "gate_mode": "hardening", "result": "pass"})
+        + "\n"
         + json.dumps({"event": "task_accepted", "result": "accepted"})
         + "\n"
     )
@@ -86,6 +88,7 @@ def test_manifest_reads_latest_bounded_gate_results(tmp_path: Path) -> None:
     )
 
     assert built.document["gates"] == {
+        "hardening": "pass",
         "pre-complete": "fail",
         "pre-handoff": "pass",
     }

@@ -6,3 +6,22 @@ timeout_seconds = 180
 # from the auto-detected Ruff, pytest, mypy, or pyright defaults. Commands are
 # arrays of argv arrays so the gate never executes configuration through a
 # shell.
+
+# Optional standard hardening profile. Enable it in the target repository,
+# replace `your_package`, and add the tools to that repository's dev group.
+# Mutation testing remains explicit: this mode never runs from fast,
+# pre-handoff, or pre-complete hooks.
+#
+# Increase `gate.timeout_seconds` above when mutmut legitimately needs more
+# than the default 180s (for example, set it to 1800).
+#
+# [commands]
+# hardening = [
+#   ["uv", "run", "pytest", "-q", "--cov=your_package", "--cov-branch",
+#    "--cov-fail-under=80", "--crap", "--crap-threshold=30", "--crap-top-n=20"],
+#   ["uv", "run", "xenon", "--max-absolute", "C", "--max-modules", "B",
+#    "--max-average", "A", "src/your_package"],
+#   ["uv", "run", "pylint", "--disable=all", "--enable=duplicate-code",
+#    "src/your_package"],
+#   ["uv", "run", "mutmut", "run"],
+# ]

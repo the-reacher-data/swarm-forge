@@ -351,7 +351,6 @@ def run_commands(
     max_bytes: int,
 ) -> tuple[int, str, int]:
     artifact_dir = root / ".swarmforge" / "artifacts" / "gates"
-    artifact_dir.mkdir(parents=True, exist_ok=True)
     for index, raw_command in enumerate(commands, start=1):
         command = expand_command(raw_command, changed_files)
         if command is None:
@@ -363,6 +362,7 @@ def run_commands(
                 file=sys.stderr,
             )
             return 2, "setup_failed", 0
+        artifact_dir.mkdir(parents=True, exist_ok=True)
         log_path = artifact_dir / f"{mode}-{index}-{uuid.uuid4()}.log"
         try:
             with log_path.open("wb") as log:
@@ -395,7 +395,10 @@ def run_commands(
                 max_bytes=max_bytes,
             )
             return 2, "fail", exposed_bytes
-        log_path.unlink(missing_ok=True)
+        if mode == "hardening" and log_path.stat().st_size:
+            print(f"HARDENING_REPORT: {log_path}")
+        else:
+            log_path.unlink(missing_ok=True)
     return 0, "pass", 0
 
 
@@ -409,6 +412,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     modes.add_argument(
         "--pre-complete", dest="mode", action="store_const", const="pre-complete"
+    )
+    modes.add_argument(
+        "--hardening", dest="mode", action="store_const", const="hardening"
     )
     args = parser.parse_args(argv)
     root = git_root(Path.cwd())
@@ -428,7 +434,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             config, "timeout_seconds", DEFAULT_TIMEOUT_SECONDS
         )
         configured = configured_commands(config, mode)
-        commands = configured or default_commands(root, mode)
+        if mode == "hardening":
+            commands = configured or []
+        else:
+            commands = configured or default_commands(root, mode)
     except (OSError, tomllib.TOMLDecodeError, ValueError) as error:
         print(f"GATE_CONFIG_FAILED: {error}", file=sys.stderr)
         route, risk_score = write_route_artifacts(

@@ -50,12 +50,18 @@ only for repositories you trust.
 python3 swarmforge/gates/gate.py --fast
 python3 swarmforge/gates/gate.py --pre-handoff
 python3 swarmforge/gates/gate.py --pre-complete
+python3 swarmforge/gates/gate.py --hardening
 ```
 
 `--fast` applies Ruff only to changed Python files. Boundary gates run the
 configured lint/format, typing and pytest commands. Passing output is silent;
 failures are capped and the full log is retained under
 `.swarmforge/artifacts/`.
+
+`--hardening` is explicitly opt-in through `commands.hardening`. It is intended
+for mutation, CRAP, complexity and duplication checks and is never called by
+the fast, handoff or completion hooks. Successful reports are retained as
+artifacts instead of being injected into agent context.
 
 Codex hooks are in `.codex/hooks.json`; Claude hooks are in
 `.claude/settings.json`. SwarmForge also runs the same gates independently at

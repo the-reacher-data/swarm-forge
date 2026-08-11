@@ -143,6 +143,79 @@ def test_non_python_project_is_a_quiet_noop(tmp_path: Path) -> None:
     assert result.stderr == ""
 
 
+def test_hardening_without_commands_is_a_quiet_opt_in_noop(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+
+    result = gate(tmp_path, "--hardening")
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert not (tmp_path / ".swarmforge/artifacts/gates").exists()
+    recorded = telemetry_events(tmp_path)
+    assert len(recorded) == 1
+    assert recorded[0]["gate_mode"] == "hardening"
+    assert recorded[0]["result"] == "pass"
+
+
+def test_hardening_runs_only_explicit_argv_commands(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+    (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge/python-gates.toml").write_text(
+        "[commands]\n"
+        'hardening = [["hardening-check", "mutation"], '
+        '["hardening-check", "dry"]]\n'
+    )
+    calls = tmp_path / "calls.log"
+    fake_bin = tmp_path / "bin"
+    write_executable(
+        fake_bin / "hardening-check",
+        '#!/bin/sh\nprintf \'%s\\n\' "$*" >> "$SWARMFORGE_TEST_CALLS"\n'
+        "printf '%s\\n' \"$*\"\n",
+    )
+    env = os.environ | {
+        "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+        "SWARMFORGE_TEST_CALLS": str(calls),
+    }
+
+    result = gate(tmp_path, "--hardening", env)
+
+    assert result.returncode == 0
+    assert result.stderr == ""
+    assert calls.read_text().splitlines() == ["mutation", "dry"]
+    reports = [
+        Path(line.removeprefix("HARDENING_REPORT: "))
+        for line in result.stdout.splitlines()
+        if line.startswith("HARDENING_REPORT: ")
+    ]
+    assert len(reports) == 2
+    assert [report.read_text().strip() for report in reports] == [
+        "mutation",
+        "dry",
+    ]
+
+
+def test_empty_hardening_commands_do_not_fall_back_to_default_gate(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+    (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge/python-gates.toml").write_text(
+        "[commands]\nhardening = []\n"
+    )
+
+    result = gate(tmp_path, "--hardening")
+
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == ""
+    assert not (tmp_path / ".swarmforge/artifacts/gates").exists()
+
+
 def test_fast_gate_runs_ruff_only_for_changed_python_files(tmp_path: Path) -> None:
     init_repo(tmp_path)
     (tmp_path / "pyproject.toml").write_text(

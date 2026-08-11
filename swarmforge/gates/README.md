@@ -1,8 +1,22 @@
 # Python gates
 
 `gate.py` runs the configured deterministic checks for fast, stop,
-pre-handoff, and pre-complete lifecycle boundaries. Explicit command arrays in
-`swarmforge/python-gates.toml` are executed unchanged.
+pre-handoff, pre-complete, and opt-in hardening boundaries. Explicit command
+arrays in `swarmforge/python-gates.toml` are executed unchanged.
+
+## Opt-in hardening
+
+`python3 swarmforge/gates/gate.py --hardening` (or
+`swarmforge/hooks/hardening`) executes only `commands.hardening`. When that
+array is absent or empty, it is a quiet no-op: there are no default commands,
+tool installs, or fallback checks. This keeps mutation testing outside normal
+edit and handoff cycles.
+
+Successful hardening commands that produce output retain it under
+`.swarmforge/artifacts/gates/`; stdout contains only bounded
+`HARDENING_REPORT` paths. Failed output uses the existing capped diagnostic and
+full-log behavior. The commented profile in `python-gates.toml` uses
+pytest/pytest-cov/pytest-crap, Xenon, Pylint `duplicate-code`, and mutmut.
 
 ## Affected pytest selection
 

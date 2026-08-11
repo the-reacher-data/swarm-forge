@@ -29,7 +29,7 @@ DEFAULT_SENSITIVE_PATTERNS = (
     "*.pem",
     "*token*",
 )
-GATE_MODES = {"fast", "stop", "pre-handoff", "pre-complete"}
+GATE_MODES = {"fast", "stop", "pre-handoff", "pre-complete", "hardening"}
 GATE_RESULTS = {"pass", "fail", "setup_failed", "config_failed", "timeout"}
 CONCURRENCY_PATTERN = re.compile(
     r"async def|threading|multiprocessing|asyncio|Lock\(|Semaphore\("
