@@ -8,9 +8,7 @@ from swarmforge.gates import manifest
 
 
 def run(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [*args], cwd=cwd, text=True, capture_output=True, check=False
-    )
+    return subprocess.run([*args], cwd=cwd, text=True, capture_output=True, check=False)
 
 
 def init_repo(root: Path) -> None:
@@ -75,13 +73,9 @@ def test_manifest_reads_latest_bounded_gate_results(tmp_path: Path) -> None:
     metrics.write_text(
         "ignored-prefix\n"
         + "[]\n"
-        + json.dumps(
-            {"event": "gate", "gate_mode": "pre-handoff", "result": "fail"}
-        )
+        + json.dumps({"event": "gate", "gate_mode": "pre-handoff", "result": "fail"})
         + "\n"
-        + json.dumps(
-            {"event": "gate", "gate_mode": "pre-handoff", "result": "pass"}
-        )
+        + json.dumps({"event": "gate", "gate_mode": "pre-handoff", "result": "pass"})
         + "\n"
         + json.dumps({"event": "task_accepted", "result": "accepted"})
         + "\n"

@@ -68,9 +68,7 @@ def test_sensitive_filtered_path_still_routes_to_security_reviewer() -> None:
 
 def test_failed_gate_has_precedence_over_security() -> None:
     result = route_manifest(
-        built_manifest(
-            ("src/auth/token.py",), gates={"pre-handoff": "setup_failed"}
-        )
+        built_manifest(("src/auth/token.py",), gates={"pre-handoff": "setup_failed"})
     )
 
     assert result["route"] == "coder"
@@ -104,9 +102,7 @@ def test_signals_are_weighted_and_reasons_are_sorted() -> None:
         }
     )
     result = route_manifest(
-        built_manifest(
-            ("pyproject.toml", "swarmforge/gates/new.py"), concurrency=True
-        ),
+        built_manifest(("pyproject.toml", "swarmforge/gates/new.py"), concurrency=True),
         config,
     )
 

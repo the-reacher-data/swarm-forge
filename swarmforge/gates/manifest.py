@@ -172,7 +172,11 @@ def _latest_gates(root: Path) -> dict[str, str]:
             continue
         mode = event.get("gate_mode")
         result = event.get("result")
-        if event.get("event") == "gate" and mode in GATE_MODES and result in GATE_RESULTS:
+        if (
+            event.get("event") == "gate"
+            and mode in GATE_MODES
+            and result in GATE_RESULTS
+        ):
             latest[mode] = result
     return dict(sorted(latest.items()))
 
@@ -185,8 +189,7 @@ def _valid_test_path(root: Path, path: str) -> bool:
         return False
     name = candidate.name
     return candidate.is_file() and (
-        (name.startswith("test") and name.endswith(".py"))
-        or name.endswith("_test.py")
+        (name.startswith("test") and name.endswith(".py")) or name.endswith("_test.py")
     )
 
 
@@ -222,7 +225,9 @@ def codegraph_impact(
     if (
         not isinstance(paths, list)
         or not paths
-        or not all(isinstance(path, str) and _valid_test_path(root, path) for path in paths)
+        or not all(
+            isinstance(path, str) and _valid_test_path(root, path) for path in paths
+        )
     ):
         return None
     return {"affected_test_count": len(paths)}
@@ -306,7 +311,9 @@ def build_manifest(
     return Manifest(
         document=_bounded_document(document),
         all_paths=all_paths,
-        concurrency_signal=any(CONCURRENCY_PATTERN.search(line) for line in added_lines),
+        concurrency_signal=any(
+            CONCURRENCY_PATTERN.search(line) for line in added_lines
+        ),
     )
 
 
