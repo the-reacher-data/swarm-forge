@@ -89,6 +89,10 @@ to `swarmforge.conf` with `lazy-window` plus a matching
 `data-engineer` and `ui-reviewer` under `swarmforge/roles/templates/` are
 templates only; copy or adapt one before registering it.
 
+`specifier` can express executable behavioral acceptance in concise Gherkin.
+`hardener` consumes the target repo's configured mutation, CRAP and DRY tools;
+those commands belong in that repo's `python-gates.toml`, not globally here.
+
 ## Tests
 
 ```sh
