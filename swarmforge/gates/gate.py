@@ -454,6 +454,23 @@ def gate_fingerprint(root: Path, mode: str, commands: Sequence[Sequence[str]]) -
     return digest.hexdigest()
 
 
+def gate_cache_dir(root: Path) -> Path:
+    """Return one untracked cache shared by every worktree of a Git repository."""
+    result = subprocess.run(
+        ["git", "rev-parse", "--git-common-dir"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return root / ".swarmforge/cache/gates"
+    common = Path(result.stdout.strip())
+    if not common.is_absolute():
+        common = root / common
+    return common.resolve() / "swarmforge/cache/gates"
+
+
 def run_cached_commands(
     root: Path,
     mode: str,
@@ -468,7 +485,7 @@ def run_cached_commands(
             root, mode, commands, changed_files, timeout_seconds, max_bytes
         )
     fingerprint = gate_fingerprint(root, mode, commands)
-    cache_dir = root / ".swarmforge/cache/gates"
+    cache_dir = gate_cache_dir(root)
     cache_dir.mkdir(parents=True, exist_ok=True)
     marker = cache_dir / f"{mode}.pass"
     lock_path = cache_dir / f"{mode}.lock"

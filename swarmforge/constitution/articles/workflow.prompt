@@ -16,6 +16,13 @@
 ## Handoffs
 - Run `ready_for_next.sh` when notified, and `done_with_current.sh` after completing accepted work.
 - Create a short draft and submit it with `swarm_handoff.sh <draft>`; never edit runtime inbox/outbox state.
+- A `task_handoff` contains `task`, `base_commit`, and the bounded `Objective`,
+  `Acceptance criteria`, `Constraints`, and `Context` sections. It starts work;
+  it never requires a fabricated commit.
+- A `result_handoff` contains `task`, `outcome` (`changed` or `reviewed`),
+  `base_commit`, `commit`, and the bounded `Summary`, `Checks`, and
+  `Unresolved risks` sections. Use `changed` only when the recipient must
+  integrate a functional descendant of `base_commit`.
 - A `git_handoff` contains only `type`, `to`, `priority`, `task`, and a resolvable 10-character commit abbreviation.
 - A `note` contains only `type`, `to`, `priority`, and a single-line `message` up to 80 characters.
-- Keep handoffs to commit, changed paths, checks and unresolved risk; omit process narrative and full logs.
+- Keep structured payloads below 8192 bytes; omit process narrative and full logs.

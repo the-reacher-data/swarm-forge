@@ -49,6 +49,33 @@
   (let [[_ body] (str/split (slurp (str file)) #"\n\n" 2)]
     (or body "")))
 
+(defn ancestor? [older newer]
+  (zero? (:exit (process/sh {:continue true}
+                            "git" "merge-base" "--is-ancestor" older newer))))
+
+(defn task-base-relation [file]
+  (when (= "task_handoff" (header-field file "type"))
+    (let [base-commit (header-field file "base_commit")]
+      (cond
+        (str/blank? base-commit)
+        :invalid
+
+        (ancestor? base-commit "HEAD")
+        :ready
+
+        (ancestor? "HEAD" base-commit)
+        :sync
+
+        :else
+        :diverged))))
+
+(defn task-base-error [file]
+  (case (task-base-relation file)
+    :invalid "TASK_BASE_MISMATCH: task_handoff has no base_commit."
+    :diverged (str "TASK_BASE_MISMATCH: " (header-field file "base_commit")
+                   " has diverged from the recipient HEAD; sync and reissue the task.")
+    nil))
+
 (defn set-header! [file field value]
   (let [lines (str/split-lines (slurp (str file)))
         prefix (str field ": ")
@@ -90,6 +117,8 @@
 
 (defn print-task [file]
   (let [task-name (header-field file "task")
+        base-commit (header-field file "base_commit")
+        outcome (header-field file "outcome")
         route (validated-route file)]
     (println "TASK:" (str file))
     (println "FROM:" (header-value file "from" "unknown"))
@@ -97,6 +126,12 @@
     (println "PRIORITY:" (header-value file "priority" "50"))
     (when task-name
       (println "TASK_NAME:" task-name))
+    (when base-commit
+      (println "BASE_COMMIT:" base-commit))
+    (when (= :sync (task-base-relation file))
+      (println "BASE_SYNC_REQUIRED: git merge --ff-only" base-commit))
+    (when outcome
+      (println "OUTCOME:" outcome))
     (when route
       (println "ROUTE_RECOMMENDATION:" route))
     (println "PAYLOAD:")
@@ -141,6 +176,8 @@
             (println "NO_TASK")
             (let [source-file (first new-files)
                   target-file (fs/path in-process-dir (fs/file-name source-file))]
+              (when-let [error (task-base-error source-file)]
+                (fail! 2 error))
               (when (fs/exists? target-file)
                 (fail! 2 (str "AMBIGUOUS_TASK_STATE: target in-process file already exists: " target-file)))
               (fs/move source-file target-file)

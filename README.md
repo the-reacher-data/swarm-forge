@@ -99,8 +99,16 @@ swarm close /path/to/project
 ```
 
 Codex and Claude share successful stop/handoff/completion results keyed by the
-Git state and exact commands. A file lock ensures concurrent agents execute an
-identical gate only once. Fast edit hooks and hardening are never cached.
+Git state and exact commands. The cache lives under Git's common directory, so
+linked worktrees reuse an identical successful gate. A file lock ensures
+concurrent agents execute it only once. Fast edit hooks and hardening are never
+cached.
+
+Planner-to-worker requests use bounded `task_handoff` contracts with objective,
+acceptance criteria, constraints, context, and the expected base commit. Workers
+return `result_handoff` contracts with the resulting commit, checks, unresolved
+risks, and an explicit `changed` or `reviewed` outcome. Legacy `git_handoff`
+messages remain accepted.
 
 Check machine prerequisites, configured Codex/Claude backends, Claude profiles,
 project dependency groups, and the CodeGraph index with:

@@ -136,6 +136,180 @@
           (is (fs/exists? queued))
           (is (not (fs/exists? draft))))))))
 
+(deftest swarm-handoff-queues-structured-task-contracts
+  (let [root (tmp-dir)
+        base-commit (init-repo! root)
+        draft (fs/path root "tmp/task.handoff")
+        payload (str "## Objective\nImplement the vehicle lead fact.\n\n"
+                     "## Acceptance criteria\n- Idempotent output.\n- Focused tests.\n\n"
+                     "## Constraints\n- Preserve the public schema.\n\n"
+                     "## Context\n- src/pipelines/mongo/motos/\n")]
+    (setup-project! root)
+    (write-file draft
+                (format (str "type: task_handoff\nto: receiver\npriority: 50\n"
+                             "task: vehicle-lead-fact\nbase_commit: %s\n\n%s")
+                        base-commit payload))
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"}}
+                      (script "swarm_handoff.sh") (str draft))
+          queued (-> (:out result) str/trim (str/replace #"^HANDOFF QUEUED: " ""))
+          content (read-file queued)]
+      (is (str/includes? content "type: task_handoff\n"))
+      (is (str/includes? content (str "base_commit: " base-commit "\n")))
+      (is (str/includes? content payload))
+      (is (not (str/includes? content "merge_and_process")))
+      (fs/copy queued (fs/path root ".swarmforge/handoffs/inbox/new/task.handoff"))
+      (let [received (run {:dir root :env {"SWARMFORGE_ROLE" "receiver"}}
+                          (script "ready_for_next.sh"))]
+        (is (str/includes? (:out received) (str "BASE_COMMIT: " base-commit)))
+        (is (str/includes? (:out received) "## Acceptance criteria"))))))
+
+(deftest swarm-handoff-rejects-incomplete-task-contracts
+  (let [root (tmp-dir)
+        base-commit (init-repo! root)
+        draft (fs/path root "tmp/incomplete-task.handoff")]
+    (setup-project! root)
+    (write-file draft
+                (format (str "type: task_handoff\nto: receiver\npriority: 50\n"
+                             "task: incomplete\nbase_commit: %s\n\n"
+                             "## Objective\nImplement it.\n")
+                        base-commit))
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"} :ok? false}
+                      (script "swarm_handoff.sh") (str draft))]
+      (is (= 2 (:exit result)))
+      (is (str/includes? (:err result) "Missing payload section '## Acceptance criteria'."))
+      (is (fs/exists? draft)))))
+
+(deftest ready-for-next-rejects-a-task-from-an-unrelated-base
+  (let [root (tmp-dir)
+        _ (init-repo! root)
+        main-branch (str/trim (:out (run {:dir root} "git" "branch" "--show-current")))
+        _ (run {:dir root} "git" "checkout" "-q" "-b" "unrelated")
+        _ (write-file (fs/path root "unrelated.txt") "other history\n")
+        _ (run {:dir root} "git" "add" "unrelated.txt")
+        _ (run {:dir root} "git" "commit" "-q" "-m" "Unrelated")
+        unrelated (str/trim (:out (run {:dir root} "git" "rev-parse" "--short=10" "HEAD")))
+        _ (run {:dir root} "git" "checkout" "-q" main-branch)
+        _ (write-file (fs/path root "main.txt") "main history\n")
+        _ (run {:dir root} "git" "add" "main.txt")
+        _ (run {:dir root} "git" "commit" "-q" "-m" "Main history")
+        draft (fs/path root "tmp/stale-task.handoff")
+        payload (str "## Objective\nImplement it.\n\n"
+                     "## Acceptance criteria\n- Tests pass.\n\n"
+                     "## Constraints\n- Stay focused.\n\n"
+                     "## Context\n- README.md\n")]
+    (setup-project! root)
+    (write-file draft
+                (format (str "type: task_handoff\nto: receiver\npriority: 50\n"
+                             "task: stale-task\nbase_commit: %s\n\n%s")
+                        unrelated payload))
+    (let [queued-result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"}}
+                             (script "swarm_handoff.sh") (str draft))
+          queued (-> (:out queued-result) str/trim (str/replace #"^HANDOFF QUEUED: " ""))
+          inbox-file (fs/path root ".swarmforge/handoffs/inbox/new/stale.handoff")]
+      (fs/copy queued inbox-file)
+      (let [received (run {:dir root :env {"SWARMFORGE_ROLE" "receiver"} :ok? false}
+                          (script "ready_for_next.sh"))]
+        (is (= 2 (:exit received)))
+        (is (str/includes? (:err received) "TASK_BASE_MISMATCH"))
+        (is (fs/exists? inbox-file))))))
+
+(deftest ready-for-next-accepts-a-fast-forwardable-task-base
+  (let [root (tmp-dir)
+        _ (init-repo! root)
+        recipient-branch (str/trim (:out (run {:dir root} "git" "branch" "--show-current")))
+        _ (run {:dir root} "git" "checkout" "-q" "-b" "planned")
+        _ (write-file (fs/path root "planned.txt") "planned history\n")
+        _ (run {:dir root} "git" "add" "planned.txt")
+        _ (run {:dir root} "git" "commit" "-q" "-m" "Planned history")
+        base-commit (str/trim (:out (run {:dir root} "git" "rev-parse" "--short=10" "HEAD")))
+        _ (run {:dir root} "git" "checkout" "-q" recipient-branch)
+        draft (fs/path root "tmp/planned-task.handoff")
+        payload (str "## Objective\nImplement it.\n\n"
+                     "## Acceptance criteria\n- Tests pass.\n\n"
+                     "## Constraints\n- Stay focused.\n\n"
+                     "## Context\n- planned.txt\n")]
+    (setup-project! root)
+    (write-file draft
+                (format (str "type: task_handoff\nto: receiver\npriority: 50\n"
+                             "task: planned-task\nbase_commit: %s\n\n%s")
+                        base-commit payload))
+    (let [queued-result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"}}
+                             (script "swarm_handoff.sh") (str draft))
+          queued (-> (:out queued-result) str/trim (str/replace #"^HANDOFF QUEUED: " ""))]
+      (fs/copy queued (fs/path root ".swarmforge/handoffs/inbox/new/planned.handoff"))
+      (let [received (run {:dir root :env {"SWARMFORGE_ROLE" "receiver"}}
+                          (script "ready_for_next.sh"))]
+        (is (= 0 (:exit received)))
+        (is (str/includes? (:out received)
+                           (str "BASE_SYNC_REQUIRED: git merge --ff-only " base-commit)))))))
+
+(deftest swarm-handoff-queues-structured-result-contracts
+  (let [root (tmp-dir)
+        base-commit (init-repo! root)
+        _ (write-file (fs/path root "result.txt") "implemented\n")
+        _ (run {:dir root} "git" "add" "result.txt")
+        _ (run {:dir root} "git" "commit" "-q" "-m" "Implement result")
+        commit (str/trim (:out (run {:dir root} "git" "rev-parse" "--short=10" "HEAD")))
+        draft (fs/path root "tmp/result.handoff")
+        payload (str "## Summary\nImplemented the vehicle lead fact.\n\n"
+                     "## Checks\n- pytest: pass\n- ruff: pass\n\n"
+                     "## Unresolved risks\n- None.\n")]
+    (setup-project! root)
+    (write-file draft
+                (format (str "type: result_handoff\nto: receiver\npriority: 50\n"
+                             "task: vehicle-lead-fact\noutcome: changed\n"
+                             "base_commit: %s\ncommit: %s\n\n%s")
+                        base-commit commit payload))
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"}}
+                      (script "swarm_handoff.sh") (str draft))
+          queued (-> (:out result) str/trim (str/replace #"^HANDOFF QUEUED: " ""))
+          content (read-file queued)]
+      (is (str/includes? content "type: result_handoff\n"))
+      (is (str/includes? content (str "base_commit: " base-commit "\n")))
+      (is (str/includes? content (str "commit: " commit "\n")))
+      (is (str/includes? content (str "merge_and_process sender " commit)))
+      (is (str/includes? content payload)))))
+
+(deftest reviewed-results-do-not-instruct-planner-to-merge
+  (let [root (tmp-dir)
+        commit (init-repo! root)
+        draft (fs/path root "tmp/review-result.handoff")
+        payload (str "## Summary\nArchitecture review passed.\n\n"
+                     "## Checks\n- Public API inspected.\n\n"
+                     "## Unresolved risks\n- None.\n")]
+    (setup-project! root)
+    (write-file draft
+                (format (str "type: result_handoff\nto: receiver\npriority: 50\n"
+                             "task: architecture-review\noutcome: reviewed\n"
+                             "base_commit: %s\ncommit: %s\n\n%s")
+                        commit commit payload))
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"}}
+                      (script "swarm_handoff.sh") (str draft))
+          queued (-> (:out result) str/trim (str/replace #"^HANDOFF QUEUED: " ""))
+          content (read-file queued)]
+      (is (str/includes? content "outcome: reviewed\n"))
+      (is (str/includes? content (str "review_result sender " commit)))
+      (is (not (str/includes? content "merge_and_process"))))))
+
+(deftest changed-results-require-a-commit-after-the-task-base
+  (let [root (tmp-dir)
+        commit (init-repo! root)
+        draft (fs/path root "tmp/no-change-result.handoff")
+        payload (str "## Summary\nNo functional change.\n\n"
+                     "## Checks\n- pytest: pass\n\n"
+                     "## Unresolved risks\n- None.\n")]
+    (setup-project! root)
+    (write-file draft
+                (format (str "type: result_handoff\nto: receiver\npriority: 50\n"
+                             "task: no-change\noutcome: changed\n"
+                             "base_commit: %s\ncommit: %s\n\n%s")
+                        commit commit payload))
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "sender"} :ok? false}
+                      (script "swarm_handoff.sh") (str draft))]
+      (is (= 2 (:exit result)))
+      (is (str/includes? (:err result)
+                         "outcome: changed requires a commit after base_commit")))))
+
 (deftest swarm-handoff-runs-project-pre-handoff-hook
   (let [root (tmp-dir)
         commit (init-repo! root)

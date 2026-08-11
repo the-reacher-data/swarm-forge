@@ -69,7 +69,8 @@
      :content content}))
 
 (defn render-message [headers body]
-  (let [preferred ["id" "from" "to" "recipient" "priority" "type" "role" "commit"
+  (let [preferred ["id" "from" "to" "recipient" "priority" "type" "role" "task"
+                   "base_commit" "outcome" "commit"
                    "message" "created_at" "enqueued_at" "dequeued_at" "completed_at"]
         remaining (->> (keys headers)
                        (remove (set preferred))

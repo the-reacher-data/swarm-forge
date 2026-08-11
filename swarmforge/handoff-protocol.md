@@ -116,7 +116,7 @@ enqueued_at: 2026-06-15T14:05:32Z
 
 Re-read your role and constitution.
 
-merge_and_process coder a1b2c3d9
+merge_and_process coder a1b2c3d9e8
 ```
 
 For broadcast handoffs, `to` preserves the full recipient list and `recipient`
@@ -124,7 +124,69 @@ identifies the specific recipient copy.
 
 ## Message Types
 
-Agents may request only two message types.
+Agents may request four message types.
+
+### `task_handoff`
+
+Starts bounded work without requiring a fabricated implementation commit. The
+base commit binds the request to the repository state the planner inspected.
+
+```text
+type: task_handoff
+to: coder
+priority: 50
+task: vehicle-lead-fact
+base_commit: a1b2c3d9e8
+
+## Objective
+Implement the vehicle lead fact.
+
+## Acceptance criteria
+- The output is idempotent.
+- Focused tests pass.
+
+## Constraints
+- Preserve the public schema.
+
+## Context
+- src/pipelines/mongo/motos/
+```
+
+The four headings are required, unique, and non-empty. The complete payload is
+limited to 8192 UTF-8 bytes. Before accepting queued work, the recipient
+verifies that `base_commit` belongs to the same linear history. A recipient
+behind that base gets an exact `BASE_SYNC_REQUIRED` fast-forward command;
+diverged history leaves the task queued and requires synchronization or reissue.
+
+### `result_handoff`
+
+Returns a bounded implementation or review result. `outcome: changed` instructs
+the recipient to integrate the commit; `outcome: reviewed` reports findings
+against the named commit without instructing a merge.
+
+```text
+type: result_handoff
+to: planner
+priority: 50
+task: vehicle-lead-fact
+outcome: changed
+base_commit: a1b2c3d9e8
+commit: b2c3d4e5f6
+
+## Summary
+Implemented the vehicle lead fact.
+
+## Checks
+- pytest: pass
+- ruff: pass
+
+## Unresolved risks
+- None.
+```
+
+The three headings are required, unique, and non-empty. The payload has the
+same 8192-byte limit. Every result commit must descend from `base_commit`, and
+`outcome: changed` additionally requires the two commits to differ.
 
 ### `git_handoff`
 
@@ -207,11 +269,11 @@ Responsibilities:
 - Serialize sequence updates with an atomic lock so concurrent handoff creation
   in one worktree cannot reuse the same sequence.
 - Validate `priority` as `00` through `99`.
-- Validate `type` as `git_handoff` or `note`.
-- Validate `git_handoff` commits as real, unambiguous commits.
+- Validate `type` as `task_handoff`, `result_handoff`, `git_handoff`, or `note`.
+- Validate task base commits and result/git commits as real, unambiguous commits.
 - Canonicalize valid commit abbreviations.
-- Generate `role` from the current sender role for `git_handoff`.
-- Preserve `task` from the draft for `git_handoff`.
+- Generate `role` from the current sender role for commit-bearing handoffs.
+- Preserve `task` from structured and legacy handoffs.
 - Generate the canonical body.
 - Atomically install the completed file into `outbox/`.
 
