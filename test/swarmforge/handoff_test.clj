@@ -66,7 +66,7 @@
 
 (defn handoff
   [{:keys [id from to recipient priority type task commit body
-           enqueued-at dequeued-at completed-at]}]
+           route enqueued-at dequeued-at completed-at]}]
   (str "id: " id "\n"
        "from: " from "\n"
        "to: " to "\n"
@@ -75,6 +75,7 @@
        "type: " type "\n"
        (when task (str "task: " task "\n"))
        (when commit (str "commit: " commit "\n"))
+       (when route (str "route: " route "\n"))
        (when enqueued-at (str "enqueued_at: " enqueued-at "\n"))
        (when dequeued-at (str "dequeued_at: " dequeued-at "\n"))
        (when completed-at (str "completed_at: " completed-at "\n"))
@@ -152,6 +153,45 @@
       (is (str/includes? (:err result) "ruff failed on src/app.py"))
       (is (fs/exists? draft))
       (is (empty? (fs/glob (fs/path root ".swarmforge/handoffs/outbox") "*.handoff"))))))
+
+(deftest git-handoff-transports-and-revalidates-route-recommendation
+  (let [root (tmp-dir)
+        commit (init-repo! root)
+        full-commit (str/trim (:out (run {:dir root} "git" "rev-parse" "HEAD")))
+        roles (fs/path root "swarmforge/roles")
+        route-json (format "{\"schema_version\":2,\"route\":\"done\",\"score\":0,\"reasons\":[],\"commit\":\"%s\",\"reviewers\":[\"qa\"]}" full-commit)
+        draft (fs/path root "tmp/route.handoff")]
+    (setup-project! root)
+    (write-file (fs/path roles "qa.prompt") "Review delivered behavior.\n")
+    (write-file (fs/path root "swarmforge/backends.toml")
+                "[instances.authorized]\nkind = \"claude\"\ncommand = [\"claude\"]\n")
+    (write-file (fs/path root "swarmforge/project-agents.toml")
+                (str "[agents.qa]\nrole = \"qa\"\nbackend_instance = \"authorized\"\n"
+                     "mode = \"lazy\"\nprompt = \"swarmforge/roles/qa.prompt\"\n"))
+    (write-file (fs/path root ".swarmforge/artifacts/route/route.json") route-json)
+    (write-file draft
+                (format "type: git_handoff\nto: receiver\npriority: 50\ntask: route-test\ncommit: %s\n"
+                        commit))
+    (let [sent (run {:dir root :env {"SWARMFORGE_ROLE" "sender"}}
+                    (script "swarm_handoff.sh") (str draft))
+          queued (-> (:out sent) str/trim (str/replace #"^HANDOFF QUEUED: " ""))
+          delivered (fs/path root ".swarmforge/handoffs/inbox/new/route.handoff")]
+      (is (str/includes? (read-file queued) (str "route: " route-json)))
+      (fs/copy queued delivered)
+      (let [received (run {:dir root :env {"SWARMFORGE_ROLE" "receiver"}}
+                          (script "ready_for_next.sh"))]
+        (is (str/includes? (:out received)
+                           (str "ROUTE_RECOMMENDATION: " route-json)))))))
+
+(deftest ready-for-next-ignores-malformed-route-recommendation
+  (let [root (tmp-dir)]
+    (init-repo! root)
+    (setup-project! root {"receiver" "task"})
+    (make-queued-handoff! root "50_bad_route.handoff"
+                          {:id "bad-route" :route "{not-json"})
+    (let [result (run {:dir root :env {"SWARMFORGE_ROLE" "receiver"}}
+                      (script "ready_for_next.sh"))]
+      (is (not (str/includes? (:out result) "ROUTE_RECOMMENDATION:"))))))
 
 (deftest successful-pre-handoff-hook-is-quiet
   (let [root (tmp-dir)

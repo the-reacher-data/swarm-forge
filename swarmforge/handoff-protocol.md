@@ -237,6 +237,11 @@ dequeued_at
 completed_at
 ```
 
+The helper may add a reserved `route` header to a `git_handoff`. Its value is
+the compact, commit-matched `route.json` recommendation produced by the gate.
+Receive helpers revalidate it against the recipient's project agent registry
+and print it as `ROUTE_RECOMMENDATION`; malformed or stale values are omitted.
+
 Validation errors should be explicit enough for an agent to repair the draft.
 
 Example error:

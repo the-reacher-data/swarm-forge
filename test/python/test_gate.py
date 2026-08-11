@@ -54,8 +54,7 @@ def setup_affected_project(
 ) -> tuple[dict[str, str], Path, Path]:
     init_repo(root)
     (root / "pyproject.toml").write_text(
-        "[project]\nname = 'sample'\nversion = '0.1.0'\n\n"
-        "[tool.pytest.ini_options]\n"
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n\n[tool.pytest.ini_options]\n"
     )
     if affected_config:
         (root / "swarmforge").mkdir()
@@ -79,20 +78,20 @@ def setup_affected_project(
     fake_bin = root / "bin"
     write_executable(
         fake_bin / "ruff",
-        "#!/bin/sh\nprintf 'ruff:%s\\n' \"$*\" >> \"$SWARMFORGE_TEST_CALLS\"\n",
+        '#!/bin/sh\nprintf \'ruff:%s\\n\' "$*" >> "$SWARMFORGE_TEST_CALLS"\n',
     )
     write_executable(
         fake_bin / "pytest",
-        "#!/bin/sh\nprintf 'pytest:%s\\n' \"$*\" >> \"$SWARMFORGE_TEST_CALLS\"\n",
+        '#!/bin/sh\nprintf \'pytest:%s\\n\' "$*" >> "$SWARMFORGE_TEST_CALLS"\n',
     )
     write_executable(
         fake_bin / "codegraph",
         "#!/bin/sh\n"
-        "printf '%s\\n' \"$*\" > \"$SWARMFORGE_TEST_CODEGRAPH_ARGS\"\n"
-        "cat > \"$SWARMFORGE_TEST_CODEGRAPH_STDIN\"\n"
-        "sleep \"${SWARMFORGE_TEST_CODEGRAPH_SLEEP:-0}\"\n"
+        'printf \'%s\\n\' "$*" > "$SWARMFORGE_TEST_CODEGRAPH_ARGS"\n'
+        'cat > "$SWARMFORGE_TEST_CODEGRAPH_STDIN"\n'
+        'sleep "${SWARMFORGE_TEST_CODEGRAPH_SLEEP:-0}"\n'
         "printf '%s' \"$SWARMFORGE_TEST_CODEGRAPH_OUTPUT\"\n"
-        "exit \"${SWARMFORGE_TEST_CODEGRAPH_EXIT:-0}\"\n",
+        'exit "${SWARMFORGE_TEST_CODEGRAPH_EXIT:-0}"\n',
     )
     env = os.environ | {
         "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
@@ -212,7 +211,9 @@ def test_failed_gate_bounds_feedback_and_keeps_full_log(tmp_path: Path) -> None:
     assert "ruff failure" not in json.dumps(recorded[0])
 
 
-def test_gate_config_failure_is_recorded_without_changing_stderr(tmp_path: Path) -> None:
+def test_gate_config_failure_is_recorded_without_changing_stderr(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "pyproject.toml").write_text(
         "[project]\nname = 'sample'\nversion = '0.1.0'\n"
     )
@@ -469,11 +470,50 @@ def test_pre_handoff_writes_deterministic_low_risk_route_artifacts(
     assert (artifact_dir / "route.json").read_bytes() == first_route
     assert manifest["gates"]["pre-handoff"] == "pass"
     assert route["route"] == "done"
+    assert route["reviewers"] == []
     assert route["reasons"] == ["signal:tests-docs-only"]
     recorded = telemetry_events(tmp_path)
     assert recorded[-1]["route"] == "done"
     assert recorded[-1]["risk_score"] == 0
     assert "reasons" not in recorded[-1]
+
+
+def test_pre_handoff_writes_valid_registered_reviewers(tmp_path: Path) -> None:
+    setup_route_project(tmp_path)
+    roles = tmp_path / "swarmforge/roles"
+    roles.mkdir()
+    (roles / "data-engineer.prompt").write_text("Review data changes.\n")
+    (roles / "ui-reviewer.prompt").write_text("Review UI changes.\n")
+    (tmp_path / "swarmforge/backends.toml").write_text(
+        "[instances.authorized]\nkind = 'claude'\ncommand = ['claude']\n"
+    )
+    (tmp_path / "swarmforge/project-agents.toml").write_text(
+        """
+[agents.data-engineer]
+role = "data-engineer"
+backend_instance = "authorized"
+mode = "lazy"
+prompt = "swarmforge/roles/data-engineer.prompt"
+[agents.data-engineer.routing]
+paths = ["docs/**"]
+priority = 20
+
+[agents.ui-reviewer]
+role = "ui-reviewer"
+backend_instance = "authorized"
+mode = "lazy"
+prompt = "swarmforge/roles/ui-reviewer.prompt"
+[agents.ui-reviewer.routing]
+paths = ["docs/**"]
+priority = 10
+""".strip()
+    )
+
+    result = gate(tmp_path, "--pre-handoff")
+    _, route = route_artifacts(tmp_path)
+
+    assert result.returncode == 0
+    assert route["reviewers"] == ["ui-reviewer", "data-engineer"]
 
 
 def test_failed_security_gate_routes_back_to_coder(tmp_path: Path) -> None:

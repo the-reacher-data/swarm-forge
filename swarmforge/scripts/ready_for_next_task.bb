@@ -7,6 +7,7 @@
 
 (def script-dir (fs/parent *file*))
 (def telemetry-script (fs/path (fs/parent script-dir) "telemetry" "metrics.py"))
+(def route-validator (fs/path (fs/parent script-dir) "gates" "route_recommendation.py"))
 
 (defn state-dir []
   (fs/path (System/getProperty "user.dir") ".swarmforge" "handoffs"))
@@ -74,14 +75,30 @@
     (spit (str tmp) (str (str/join "\n" result) "\n"))
     (fs/move tmp file {:replace-existing true})))
 
+(defn validated-route [file]
+  (let [commit (header-field file "commit")
+        route (header-field file "route")]
+    (when (and commit route)
+      (let [result (process/sh {:continue true}
+                               "python3" (str route-validator)
+                               "--root" (System/getProperty "user.dir")
+                               "--commit" commit
+                               "--payload" route)
+            output (str/trim (:out result))]
+        (when (and (zero? (:exit result)) (not (str/blank? output)))
+          output)))))
+
 (defn print-task [file]
-  (let [task-name (header-field file "task")]
+  (let [task-name (header-field file "task")
+        route (validated-route file)]
     (println "TASK:" (str file))
     (println "FROM:" (header-value file "from" "unknown"))
     (println "TYPE:" (header-value file "type" "unknown"))
     (println "PRIORITY:" (header-value file "priority" "50"))
     (when task-name
       (println "TASK_NAME:" task-name))
+    (when route
+      (println "ROUTE_RECOMMENDATION:" route))
     (println "PAYLOAD:")
     (print (body file))))
 

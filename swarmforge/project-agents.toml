@@ -1,4 +1,5 @@
 # This registry is the trust boundary. The planner may route only to listed agents.
+# To opt in a specialist, add its agent table and optional data-only routing table.
 [agents.architect]
 role = "architect"
 backend_instance = "claude-personal"

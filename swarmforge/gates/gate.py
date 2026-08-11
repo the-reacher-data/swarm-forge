@@ -18,9 +18,11 @@ import uuid
 
 try:
     from swarmforge.gates import manifest as manifest_module
+    from swarmforge.gates import registry as registry_module
     from swarmforge.gates import risk as risk_module
 except ModuleNotFoundError:  # Direct execution resolves sibling modules.
     import manifest as manifest_module  # type: ignore[no-redef]
+    import registry as registry_module  # type: ignore[no-redef]
     import risk as risk_module  # type: ignore[no-redef]
 
 
@@ -319,7 +321,10 @@ def write_route_artifacts(
             affected_timeout_seconds=affected_timeout,
             affected_depth=affected_depth,
         )
-        route = risk_module.route_manifest(built, risk_config)
+        registry = registry_module.load_registry(root)
+        route = risk_module.route_manifest(
+            built, risk_config, routing_agents=registry.agents
+        )
         artifact_dir = root / ".swarmforge" / "artifacts" / "route"
         manifest_module.atomic_write(
             artifact_dir / "manifest.json", manifest_module.serialize_manifest(built)

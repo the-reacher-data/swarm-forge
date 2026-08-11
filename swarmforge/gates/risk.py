@@ -9,11 +9,13 @@ import fnmatch
 
 try:
     from swarmforge.gates.manifest import DEFAULT_SENSITIVE_PATTERNS, Manifest
+    from swarmforge.gates.registry import RegisteredAgent
 except ModuleNotFoundError:  # Direct gate execution resolves sibling modules.
     from manifest import DEFAULT_SENSITIVE_PATTERNS, Manifest  # type: ignore[no-redef]
+    from registry import RegisteredAgent  # type: ignore[no-redef]
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SIGNALS = ("lockfile", "concurrency", "public-api", "size")
 DEFAULT_SECURITY_PATTERNS = (
     "*auth*",
@@ -154,13 +156,15 @@ def _matches_any(paths: Sequence[str], patterns: Sequence[str]) -> bool:
 
 def _tests_docs_only(paths: Sequence[str]) -> bool:
     return bool(paths) and all(
-        path.startswith(("test/", "docs/")) or path.lower().endswith(".md")
+        path.startswith(("test/", "tests/", "docs/")) or path.lower().endswith(".md")
         for path in paths
     )
 
 
 def route_manifest(
-    manifest: Manifest, config: RiskConfig = DEFAULT_CONFIG
+    manifest: Manifest,
+    config: RiskConfig = DEFAULT_CONFIG,
+    routing_agents: Mapping[str, RegisteredAgent] | None = None,
 ) -> dict[str, object]:
     """Return a bounded route recommendation without performing any I/O."""
     paths = manifest.all_paths
@@ -219,10 +223,36 @@ def route_manifest(
     else:
         route = "done"
 
+    matched_reviewers: list[RegisteredAgent] = []
+    for name, agent in (routing_agents or {}).items():
+        rule = agent.routing
+        if (
+            rule is not None
+            and name != route
+            and (
+                _matches_any(paths, rule.paths)
+                or any(signals.get(signal, False) for signal in rule.signals)
+            )
+        ):
+            matched_reviewers.append(agent)
+    matched_reviewers.sort(
+        key=lambda agent: (
+            not agent.routing.mandatory,
+            agent.routing.priority,
+            agent.name,
+        )
+        if agent.routing is not None
+        else (True, 50, agent.name)
+    )
+    if len(matched_reviewers) > 2:
+        reasons.add("reviewers:truncated")
+    reviewers = [agent.name for agent in matched_reviewers[:2]]
+
     return {
         "schema_version": SCHEMA_VERSION,
         "route": route,
         "score": score,
         "reasons": sorted(reasons),
         "commit": commit,
+        "reviewers": reviewers,
     }

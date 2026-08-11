@@ -8,6 +8,7 @@
 
 (def script-dir (fs/parent *file*))
 (def telemetry-script (fs/path (fs/parent script-dir) "telemetry" "metrics.py"))
+(def route-validator (fs/path (fs/parent script-dir) "gates" "route_recommendation.py"))
 
 (def usage-text
   (str "Usage: swarm_handoff.sh <draft-file>\n\n"
@@ -22,7 +23,7 @@
        "priority: NN\n"
        "message: <one line, max 80 chars>"))
 
-(def reserved-fields #{"id" "from" "role" "recipient" "created_at" "enqueued_at" "dequeued_at" "completed_at"})
+(def reserved-fields #{"id" "from" "role" "recipient" "route" "created_at" "enqueued_at" "dequeued_at" "completed_at"})
 (def allowed-fields #{"type" "to" "priority" "task" "commit" "message"})
 (def allowed-types #{"git_handoff" "note"})
 
@@ -282,7 +283,20 @@
     "git_handoff" (str "Re-read your role and constitution.\n\nmerge_and_process " sender " " canonical-commit)
     "note" (str "Re-read your role and constitution.\n\n" note-message)))
 
-(defn write-handoff! [{:keys [headers recipients canonical-commit sender]}]
+(defn route-recommendation [commit]
+  (let [root (System/getProperty "user.dir")
+        artifact (fs/path root ".swarmforge" "artifacts" "route" "route.json")]
+    (when (fs/regular-file? artifact)
+      (let [result (process/sh {:continue true}
+                               "python3" (str route-validator)
+                               "--root" root
+                               "--commit" commit
+                               "--path" (str artifact))
+            output (str/trim (:out result))]
+        (when (and (zero? (:exit result)) (not (str/blank? output)))
+          output)))))
+
+(defn write-handoff! [{:keys [headers recipients canonical-commit sender route]}]
   (let [timestamp-id (id-timestamp)
         created-at (timestamp)
         sequence (next-sequence)
@@ -307,6 +321,8 @@
                       (str "commit: " canonical-commit))
                 (= "note" type)
                 (conj (str "message: " (get headers "message")))
+                route
+                (conj (str "route: " route))
                 true
                 (conj (str "created_at: " created-at)
                       ""
@@ -365,10 +381,13 @@
             "SWARMFORGE_HOOK_TASK" (get headers "task")
             "SWARMFORGE_HOOK_COMMIT" (:canonical-commit validation)
             "SWARMFORGE_HOOK_RECIPIENTS" (str/join "," (:recipients validation))}))
-        (let [{:keys [path id]} (write-handoff! {:headers headers
+        (let [route (when (= "git_handoff" (get headers "type"))
+                      (route-recommendation (:canonical-commit validation)))
+              {:keys [path id]} (write-handoff! {:headers headers
                                                 :recipients (:recipients validation)
                                                 :canonical-commit (:canonical-commit validation)
-                                                :sender sender})]
+                                                :sender sender
+                                                :route route})]
           (record-telemetry! "--event" "handoff_submitted"
                              "--id" id
                              "--result" "submitted"
