@@ -69,6 +69,40 @@ handoff and completion, so correctness does not depend on either client.
 
 Tune commands and limits in `swarmforge/python-gates.toml`.
 
+## Cross-project toolchain
+
+Check machine prerequisites, configured Codex/Claude backends, Claude profiles,
+project dependency groups, and the CodeGraph index with:
+
+```sh
+./swarm doctor [project-root]
+```
+
+Prepare a project with:
+
+```sh
+./swarm bootstrap [project-root]
+```
+
+`bootstrap` runs direct argv only. For Python projects it uses `uv add --group`
+to add any missing standard packages, updating `pyproject.toml` and `uv.lock`,
+then synchronizes `dev` and `hardening`. It also initializes CodeGraph when a
+Git project has no index. It never installs unpinned global Python packages or
+guesses how to install missing system CLIs. Missing machine prerequisites block
+the command with a deterministic report.
+
+Python projects should version the standard groups themselves:
+
+```toml
+[dependency-groups]
+dev = ["pytest", "pytest-cov", "ruff"]
+hardening = ["mutmut", "pytest-crap", "xenon", "pylint"]
+```
+
+`pytest-bdd` belongs in `dev` only for projects that execute Gherkin features.
+Because uv shares its download cache, each repository remains reproducible
+without paying the full installation cost again.
+
 ## Backends and project agents
 
 Portable instances live in `swarmforge/backends.toml`. Machine-specific
