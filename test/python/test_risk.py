@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+import subprocess
+
+import pytest
+
 from swarmforge.gates.manifest import Manifest
+from swarmforge.gates.registry import RegisteredAgent, RoutingRule
 from swarmforge.gates.risk import DEFAULT_CONFIG, load_risk_config, route_manifest
 
 
@@ -32,18 +38,106 @@ def built_manifest(
     )
 
 
+def agent(
+    name: str,
+    *,
+    paths: tuple[str, ...] = (),
+    signals: tuple[str, ...] = (),
+    priority: int = 50,
+    mandatory: bool = False,
+) -> RegisteredAgent:
+    return RegisteredAgent(
+        name=name,
+        role=name,
+        backend_instance="authorized",
+        mode="lazy",
+        prompt=f"swarmforge/roles/{name}.prompt",
+        tags=(),
+        routing=RoutingRule(paths, signals, priority, mandatory),
+    )
+
+
 def test_tests_and_docs_only_force_done() -> None:
     result = route_manifest(
         built_manifest(("test/python/test_api.py", "docs/routing.md"))
     )
 
     assert result == {
-        "schema_version": 1,
+        "schema_version": 2,
         "route": "done",
         "score": 0,
         "reasons": ["signal:tests-docs-only"],
         "commit": "a" * 40,
+        "reviewers": [],
     }
+
+
+def test_standard_pytest_directory_is_tests_docs_only() -> None:
+    result = route_manifest(built_manifest(("tests/test_api.py",)))
+
+    assert result["route"] == "done"
+    assert result["reasons"] == ["signal:tests-docs-only"]
+
+
+def test_reviewers_are_matched_deduplicated_ordered_and_capped() -> None:
+    routing_agents = {
+        "zeta": agent("zeta", paths=("src/**",), priority=1),
+        "beta": agent("beta", signals=("public-api",), priority=2),
+        "alpha": agent("alpha", paths=("src/**",), priority=99, mandatory=True),
+    }
+
+    result = route_manifest(
+        built_manifest(("src/api.py", "swarmforge/gates/new.py")),
+        routing_agents=routing_agents,
+    )
+
+    assert result["reviewers"] == ["alpha", "zeta"]
+    assert result["reasons"] == ["reviewers:truncated", "signal:public-api"]
+
+
+def test_equal_priority_reviewers_are_ordered_by_name() -> None:
+    routing_agents = {
+        "zeta": agent("zeta", paths=("src/**",), priority=10),
+        "alpha": agent("alpha", paths=("src/**",), priority=10),
+    }
+
+    result = route_manifest(
+        built_manifest(("src/app.py",)), routing_agents=routing_agents
+    )
+
+    assert result["reviewers"] == ["alpha", "zeta"]
+
+
+def test_primary_route_is_not_duplicated_as_reviewer() -> None:
+    routing_agents = {
+        "security-reviewer": agent(
+            "security-reviewer", paths=("src/auth/**",), mandatory=True
+        )
+    }
+
+    result = route_manifest(
+        built_manifest(("src/auth/token.py",)), routing_agents=routing_agents
+    )
+
+    assert result["route"] == "security-reviewer"
+    assert result["reviewers"] == []
+
+
+def test_recommendation_does_not_start_backends_or_load_prompts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def unexpected_call(*args: object, **kwargs: object) -> None:
+        raise AssertionError((args, kwargs))
+
+    monkeypatch.setattr(subprocess, "run", unexpected_call)
+    monkeypatch.setattr(Path, "read_text", unexpected_call)
+
+    result = route_manifest(
+        built_manifest(("src/app.py",)),
+        routing_agents={"qa": agent("qa", paths=("src/**",))},
+    )
+
+    assert result["reviewers"] == ["qa"]
 
 
 def test_large_change_routes_to_architect() -> None:

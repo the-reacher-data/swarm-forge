@@ -470,11 +470,50 @@ def test_pre_handoff_writes_deterministic_low_risk_route_artifacts(
     assert (artifact_dir / "route.json").read_bytes() == first_route
     assert manifest["gates"]["pre-handoff"] == "pass"
     assert route["route"] == "done"
+    assert route["reviewers"] == []
     assert route["reasons"] == ["signal:tests-docs-only"]
     recorded = telemetry_events(tmp_path)
     assert recorded[-1]["route"] == "done"
     assert recorded[-1]["risk_score"] == 0
     assert "reasons" not in recorded[-1]
+
+
+def test_pre_handoff_writes_valid_registered_reviewers(tmp_path: Path) -> None:
+    setup_route_project(tmp_path)
+    roles = tmp_path / "swarmforge/roles"
+    roles.mkdir()
+    (roles / "data-engineer.prompt").write_text("Review data changes.\n")
+    (roles / "ui-reviewer.prompt").write_text("Review UI changes.\n")
+    (tmp_path / "swarmforge/backends.toml").write_text(
+        "[instances.authorized]\nkind = 'claude'\ncommand = ['claude']\n"
+    )
+    (tmp_path / "swarmforge/project-agents.toml").write_text(
+        """
+[agents.data-engineer]
+role = "data-engineer"
+backend_instance = "authorized"
+mode = "lazy"
+prompt = "swarmforge/roles/data-engineer.prompt"
+[agents.data-engineer.routing]
+paths = ["docs/**"]
+priority = 20
+
+[agents.ui-reviewer]
+role = "ui-reviewer"
+backend_instance = "authorized"
+mode = "lazy"
+prompt = "swarmforge/roles/ui-reviewer.prompt"
+[agents.ui-reviewer.routing]
+paths = ["docs/**"]
+priority = 10
+""".strip()
+    )
+
+    result = gate(tmp_path, "--pre-handoff")
+    _, route = route_artifacts(tmp_path)
+
+    assert result.returncode == 0
+    assert route["reviewers"] == ["ui-reviewer", "data-engineer"]
 
 
 def test_failed_security_gate_routes_back_to_coder(tmp_path: Path) -> None:

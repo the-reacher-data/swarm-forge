@@ -17,6 +17,9 @@ def run_catalog(root: Path) -> subprocess.CompletedProcess[str]:
 def test_catalog_exposes_only_registered_agents(tmp_path: Path) -> None:
     (tmp_path / "swarmforge" / "roles").mkdir(parents=True)
     (tmp_path / "swarmforge" / "roles" / "architect.prompt").write_text("review\n")
+    (tmp_path / "swarmforge" / "backends.toml").write_text(
+        "[instances.claude-personal]\nkind = 'claude'\ncommand = ['claude']\n"
+    )
     (tmp_path / "swarmforge" / "project-agents.toml").write_text(
         """
 [agents.architect]
@@ -42,6 +45,9 @@ tags = ["architecture", "api"]
 
 def test_catalog_rejects_prompt_outside_repository(tmp_path: Path) -> None:
     (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge" / "backends.toml").write_text(
+        "[instances.codex-primary]\nkind = 'codex'\ncommand = ['codex']\n"
+    )
     (tmp_path / "swarmforge" / "project-agents.toml").write_text(
         """
 [agents.bad]
@@ -54,4 +60,4 @@ prompt = "../outside.prompt"
     result = run_catalog(tmp_path)
 
     assert result.returncode == 2
-    assert "untrusted or missing prompt" in result.stderr
+    assert "bad:invalid-prompt" in result.stderr
