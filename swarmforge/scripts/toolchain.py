@@ -14,6 +14,11 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+try:
+    from swarmforge.scripts.project_integration import install_cli, integrate_project
+except ModuleNotFoundError:  # Direct execution resolves the sibling module.
+    from project_integration import install_cli, integrate_project
+
 
 FRAMEWORK_ROOT = Path(__file__).resolve().parents[2]
 CORE_TOOLS = ("git", "curl", "tar", "python3", "uv", "tmux", "bb", "codegraph")
@@ -30,6 +35,18 @@ class ToolCheck:
     name: str
     ok: bool
     detail: str
+
+
+def inspect_integration(root: Path) -> tuple[ToolCheck, ...]:
+    """Check the local files that make hooks usable without copied framework code."""
+    expected = (
+        ("codex-hooks", root / ".codex/hooks.json"),
+        ("codex-codegraph", root / ".codex/config.toml"),
+        ("claude-hooks", root / ".claude/settings.json"),
+        ("python-gates", root / ".swarmforge/python-gates.toml"),
+        ("swarm-runtime", root / ".swarmforge/runtime/swarmforge.conf"),
+    )
+    return tuple(ToolCheck(name, path.is_file(), str(path)) for name, path in expected)
 
 
 def _toml(path: Path) -> dict[str, object]:
@@ -110,7 +127,9 @@ def _managed_group_requirements(
         raise ValueError("pyproject.toml: project must be a table")
     raw_extras = project.get("optional-dependencies", {})
     if not isinstance(raw_extras, dict):
-        raise ValueError("pyproject.toml: project.optional-dependencies must be a table")
+        raise ValueError(
+            "pyproject.toml: project.optional-dependencies must be a table"
+        )
 
     groups: dict[str, tuple[str, list[object]]] = {}
     for group in MANAGED_GROUPS:
@@ -197,6 +216,10 @@ def _print_doctor(
     for check in checks:
         status = "OK" if check.ok else "MISSING"
         print(f"{status}\tmachine\t{check.name}\t{check.detail}")
+    integrations = inspect_integration(root)
+    for check in integrations:
+        status = "OK" if check.ok else "MISSING"
+        print(f"{status}\tproject-integration\t{check.name}\t{check.detail}")
     if (root / "pyproject.toml").is_file():
         for group in MANAGED_GROUPS:
             status = "OK" if group in groups else "SKIP"
@@ -213,7 +236,11 @@ def _print_doctor(
     index_status = "OK" if index_present else "MISSING" if index_required else "SKIP"
     print(f"{index_status}\tproject\t.codegraph")
     machine_ok = all(check.ok for check in checks)
-    project_ok = not missing_packages and (index_present or not index_required)
+    project_ok = (
+        not missing_packages
+        and (index_present or not index_required)
+        and all(check.ok for check in integrations)
+    )
     return 0 if machine_ok and (project_ok or not strict_project) else 2
 
 
@@ -242,15 +269,78 @@ def _bootstrap(root: Path, *, config_root: Path = FRAMEWORK_ROOT) -> int:
     return 0
 
 
+def _integrate(root: Path) -> int:
+    cli_path = Path(shutil.which("swarm") or FRAMEWORK_ROOT / "swarm")
+    try:
+        paths = integrate_project(root, cli_path=cli_path)
+    except (OSError, ValueError) as error:
+        print(f"INTEGRATE_FAILED: {error}", file=sys.stderr)
+        return 2
+    for path in paths:
+        print(f"INTEGRATE_OK\t{path}")
+    return 0
+
+
+def _run_gate(root: Path, mode: str) -> int:
+    gate = FRAMEWORK_ROOT / "swarmforge/gates/gate.py"
+    result = subprocess.run(
+        [sys.executable, str(gate), f"--{mode}"], cwd=root, check=False
+    )
+    return result.returncode
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("doctor", "bootstrap"))
-    parser.add_argument("root", nargs="?", type=Path, default=Path.cwd())
+    parser = argparse.ArgumentParser(
+        prog="swarm",
+        description="Local deterministic multi-agent workflow for Codex and Claude.",
+        epilog=(
+            "Launch commands:\n"
+            "  swarm run [project-root]    launch the configured swarm\n"
+            "  swarm close [project-root]  stop its sessions and daemon\n"
+            "  swarm [project-root]        shorthand for swarm run"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    commands = parser.add_subparsers(dest="command", required=True)
+    for name, help_text in (
+        ("doctor", "check machine, project tools, hooks, and CodeGraph"),
+        ("bootstrap", "install pinned project tools and initialize CodeGraph"),
+        ("integrate", "install ignored local Codex and Claude hooks"),
+    ):
+        command = commands.add_parser(name, help=help_text)
+        command.add_argument("root", nargs="?", type=Path, default=Path.cwd())
+    gate = commands.add_parser("gate", help="run one deterministic project gate")
+    gate.add_argument(
+        "mode", choices=("fast", "stop", "pre-handoff", "pre-complete", "hardening")
+    )
+    gate.add_argument("root", nargs="?", type=Path, default=Path.cwd())
+    hardening = commands.add_parser(
+        "hardening", help="run CRAP, complexity, duplication, and mutation gates"
+    )
+    hardening.add_argument("root", nargs="?", type=Path, default=Path.cwd())
+    install = commands.add_parser(
+        "install-cli", help="install swarm and close-swarm in a user bin directory"
+    )
+    install.add_argument("--bin-dir", type=Path, default=Path.home() / ".local/bin")
     args = parser.parse_args(argv)
+    if args.command == "install-cli":
+        try:
+            install_cli(bin_dir=args.bin_dir)
+        except (OSError, FileExistsError) as error:
+            print(f"INSTALL_CLI_FAILED: {error}", file=sys.stderr)
+            return 2
+        print(f"INSTALL_CLI_OK\t{args.bin_dir.expanduser().resolve()}")
+        return 0
     root = args.root.resolve()
     if args.command == "doctor":
         return _print_doctor(root)
-    return _bootstrap(root)
+    if args.command == "bootstrap":
+        return _bootstrap(root)
+    if args.command == "integrate":
+        return _integrate(root)
+    if args.command == "hardening":
+        return _run_gate(root, "hardening")
+    return _run_gate(root, args.mode)
 
 
 if __name__ == "__main__":

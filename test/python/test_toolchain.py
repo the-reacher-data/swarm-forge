@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
+
+import pytest
 
 from swarmforge.scripts.toolchain import (
     _print_doctor,
     bootstrap_commands,
     inspect_machine,
+    install_cli,
+    integrate_project,
     missing_group_packages,
     project_groups,
 )
@@ -201,3 +206,61 @@ def test_bootstrap_commands_do_not_reinitialize_codegraph(tmp_path: Path) -> Non
         ),
         ("uv", "sync", "--group", "dev", "--group", "hardening"),
     )
+
+
+def test_integrate_project_preserves_settings_and_is_idempotent(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    cli = tmp_path / "bin/swarm"
+    (project / ".git/info").mkdir(parents=True)
+    (project / ".claude").mkdir()
+    (project / ".claude/agents").mkdir()
+    (project / ".claude/agents/data-engineer.md").write_text("Review data changes.\n")
+    (project / ".claude/settings.json").write_text(
+        json.dumps({"permissions": {"allow": ["Bash(make test)"]}})
+    )
+
+    first = integrate_project(project, cli_path=cli)
+    second = integrate_project(project, cli_path=cli)
+
+    assert first == second
+    claude = json.loads((project / ".claude/settings.json").read_text())
+    assert "Bash(make test)" in claude["permissions"]["allow"]
+    assert "mcp__codegraph__codegraph_context" in claude["permissions"]["allow"]
+    assert claude["hooks"]["Stop"][0]["hooks"][0]["command"].endswith(" gate stop")
+    codex = json.loads((project / ".codex/hooks.json").read_text())
+    assert codex["hooks"]["PostToolUse"][0]["matcher"] == "apply_patch|Edit|Write"
+    assert "hardening" in (project / ".swarmforge/python-gates.toml").read_text()
+    assert "[mcp_servers.codegraph]" in (project / ".codex/config.toml").read_text()
+    runtime = project / ".swarmforge/runtime"
+    assert "lazy-window data-engineer" in (runtime / "swarmforge.conf").read_text()
+    assert "[agents.data-engineer]" in (runtime / "project-agents.toml").read_text()
+    assert (runtime / "roles/data-engineer.prompt").is_file()
+    exclude = (project / ".git/info/exclude").read_text()
+    assert exclude.count("# SwarmForge local integration") == 1
+
+
+def test_install_cli_creates_idempotent_local_links(tmp_path: Path) -> None:
+    framework = tmp_path / "framework"
+    bin_dir = tmp_path / "bin"
+    framework.mkdir()
+    (framework / "swarm").write_text("launcher")
+    (framework / "close-swarm").write_text("closer")
+
+    install_cli(bin_dir=bin_dir, framework_root=framework)
+    install_cli(bin_dir=bin_dir, framework_root=framework)
+
+    assert (bin_dir / "swarm").resolve() == framework / "swarm"
+    assert (bin_dir / "close-swarm").resolve() == framework / "close-swarm"
+
+
+def test_install_cli_refuses_to_replace_unmanaged_file(tmp_path: Path) -> None:
+    framework = tmp_path / "framework"
+    bin_dir = tmp_path / "bin"
+    framework.mkdir()
+    bin_dir.mkdir()
+    (framework / "swarm").write_text("launcher")
+    (framework / "close-swarm").write_text("closer")
+    (bin_dir / "swarm").write_text("some other command")
+
+    with pytest.raises(FileExistsError):
+        install_cli(bin_dir=bin_dir, framework_root=framework)

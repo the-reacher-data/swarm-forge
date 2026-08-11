@@ -71,6 +71,37 @@ Tune commands and limits in `swarmforge/python-gates.toml`.
 
 ## Cross-project toolchain
 
+Install the user-local CLI once (the default `~/.local/bin` must be on PATH):
+
+```sh
+./swarm install-cli
+swarm --help
+```
+
+Prepare and integrate a repository without copying SwarmForge source into it:
+
+```sh
+swarm bootstrap /path/to/project
+swarm integrate /path/to/project
+swarm doctor /path/to/project
+```
+
+`integrate` writes only ignored local state under `.codex/`, `.claude/`, and
+`.swarmforge/`. It installs Codex and Claude edit/stop hooks, CodeGraph MCP
+configuration, hardening commands, and a local runtime configuration. Project
+agents found under `.claude/agents/` become trusted lazy SwarmForge roles.
+
+Launch and stop the project swarm from any directory with:
+
+```sh
+swarm run /path/to/project
+swarm close /path/to/project
+```
+
+Codex and Claude share successful stop/handoff/completion results keyed by the
+Git state and exact commands. A file lock ensures concurrent agents execute an
+identical gate only once. Fast edit hooks and hardening are never cached.
+
 Check machine prerequisites, configured Codex/Claude backends, Claude profiles,
 project dependency groups, and the CodeGraph index with:
 
@@ -84,9 +115,9 @@ Prepare a project with:
 ./swarm bootstrap [project-root]
 ```
 
-`bootstrap` runs direct argv only. For Python projects it uses `uv add --group`
-to add any missing standard packages, updating `pyproject.toml` and `uv.lock`,
-then synchronizes `dev` and `hardening`. It also initializes CodeGraph when a
+`bootstrap` runs direct argv only. For Python projects it preserves an existing
+`dev` extra or dependency group, adds missing standard packages, updates
+`pyproject.toml` and `uv.lock`, then synchronizes `dev` and `hardening`. It also initializes CodeGraph when a
 Git project has no index. It never installs unpinned global Python packages or
 guesses how to install missing system CLIs. Missing machine prerequisites block
 the command with a deterministic report.

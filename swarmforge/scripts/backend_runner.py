@@ -45,7 +45,10 @@ def merge_instance(base: dict[str, Any], override: dict[str, Any]) -> dict[str, 
 
 
 def resolve_instance(root: Path, name: str) -> dict[str, Any]:
-    portable = load_toml(root / "swarmforge" / "backends.toml")
+    runtime = root / ".swarmforge/runtime/backends.toml"
+    portable = load_toml(
+        runtime if runtime.is_file() else root / "swarmforge" / "backends.toml"
+    )
     local = load_toml(root / ".swarmforge" / "backends.local.toml")
     portable_instance = portable.get("instances", {}).get(name)
     local_instance = local.get("instances", {}).get(name, {})

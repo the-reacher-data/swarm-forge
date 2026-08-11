@@ -19,8 +19,11 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     args = parser.parse_args()
     root = args.root.resolve()
-    registry_path = root / "swarmforge" / "project-agents.toml"
-    if not registry_path.exists():
+    registry_paths = (
+        root / ".swarmforge/runtime/project-agents.toml",
+        root / "swarmforge/project-agents.toml",
+    )
+    if not any(path.exists() for path in registry_paths):
         return 0
     registry = load_registry(root)
     for name, agent in registry.agents.items():

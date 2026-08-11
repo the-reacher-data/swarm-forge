@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -15,6 +16,11 @@ import sys
 import time
 import tomllib
 import uuid
+
+try:
+    import fcntl
+except ModuleNotFoundError:  # Windows keeps cache reuse but cannot serialize it.
+    fcntl = None  # type: ignore[assignment]
 
 try:
     from swarmforge.gates import manifest as manifest_module
@@ -29,6 +35,7 @@ except ModuleNotFoundError:  # Direct execution resolves sibling modules.
 DEFAULT_MAX_OUTPUT_BYTES = 8_192
 DEFAULT_TIMEOUT_SECONDS = 180
 DEFAULT_AFFECTED_TIMEOUT_SECONDS = 30
+CACHED_MODES = {"stop", "pre-handoff", "pre-complete"}
 
 
 def git_root(cwd: Path) -> Path:
@@ -65,11 +72,14 @@ def changed_python_files(root: Path) -> list[str]:
 
 
 def load_config(root: Path) -> dict[str, object]:
-    path = root / "swarmforge" / "python-gates.toml"
-    if not path.is_file():
-        return {}
-    with path.open("rb") as stream:
-        return tomllib.load(stream)
+    for path in (
+        root / ".swarmforge" / "python-gates.toml",
+        root / "swarmforge" / "python-gates.toml",
+    ):
+        if path.is_file():
+            with path.open("rb") as stream:
+                return tomllib.load(stream)
+    return {}
 
 
 def project_uses_tool(pyproject: dict[str, object], tool: str) -> bool:
@@ -86,24 +96,30 @@ def load_pyproject(root: Path) -> dict[str, object]:
 
 
 def default_commands(root: Path, mode: str) -> list[list[str]]:
+    prefix = ["uv", "run"] if (root / "uv.lock").is_file() else []
     if mode == "fast":
         return [
-            ["ruff", "check", "--fix", "{changed_python_files}"],
-            ["ruff", "format", "{changed_python_files}"],
+            [*prefix, "ruff", "check", "--fix", "{changed_python_files}"],
+            [*prefix, "ruff", "format", "{changed_python_files}"],
         ]
 
     commands = [
-        ["ruff", "check", "."],
-        ["ruff", "format", "--check", "."],
+        [*prefix, "ruff", "check", "."],
+        [*prefix, "ruff", "format", "--check", "."],
     ]
     pyproject = load_pyproject(root)
     if project_uses_tool(pyproject, "mypy"):
-        commands.append(["mypy", "."])
+        target = "src" if (root / "src").is_dir() else "."
+        commands.append([*prefix, "mypy", "--no-incremental", target])
     elif project_uses_tool(pyproject, "pyright"):
-        commands.append(["pyright"])
+        commands.append([*prefix, "pyright"])
     if (root / "tests").is_dir() or project_uses_tool(pyproject, "pytest"):
-        commands.append(["pytest", "-q"])
+        commands.append([*prefix, "pytest", "-q"])
     return commands
+
+
+def is_default_pytest(command: Sequence[str]) -> bool:
+    return list(command) in (["pytest", "-q"], ["uv", "run", "pytest", "-q"])
 
 
 def configured_commands(config: dict[str, object], mode: str) -> list[list[str]] | None:
@@ -402,6 +418,75 @@ def run_commands(
     return 0, "pass", 0
 
 
+def gate_fingerprint(root: Path, mode: str, commands: Sequence[Sequence[str]]) -> str:
+    """Hash the repository state and exact argv without exposing file contents."""
+    digest = hashlib.sha256()
+    digest.update(mode.encode())
+    digest.update(json.dumps(commands, separators=(",", ":")).encode())
+    # A shared CLI can be upgraded independently from the consumer repository.
+    # Include the gate engine so an old successful result is never reused after
+    # its implementation changes.
+    for engine_path in sorted(Path(__file__).resolve().parent.glob("*.py")):
+        digest.update(engine_path.name.encode())
+        digest.update(engine_path.read_bytes())
+    for command in (
+        ["git", "rev-parse", "HEAD"],
+        ["git", "diff", "--binary", "HEAD", "--"],
+    ):
+        result = subprocess.run(command, cwd=root, capture_output=True, check=False)
+        digest.update(str(result.returncode).encode())
+        digest.update(result.stdout)
+    untracked = subprocess.run(
+        ["git", "ls-files", "--others", "--exclude-standard", "-z"],
+        cwd=root,
+        capture_output=True,
+        check=False,
+    )
+    digest.update(str(untracked.returncode).encode())
+    for raw_path in sorted(filter(None, untracked.stdout.split(b"\0"))):
+        digest.update(raw_path)
+        path = root / os.fsdecode(raw_path)
+        if not path.is_file():
+            continue
+        with path.open("rb") as stream:
+            while chunk := stream.read(64 * 1024):
+                digest.update(chunk)
+    return digest.hexdigest()
+
+
+def run_cached_commands(
+    root: Path,
+    mode: str,
+    commands: Sequence[Sequence[str]],
+    changed_files: Sequence[str],
+    timeout_seconds: int,
+    max_bytes: int,
+) -> tuple[int, str, int]:
+    """Serialize equal gates and reuse only successful results."""
+    if mode not in CACHED_MODES:
+        return run_commands(
+            root, mode, commands, changed_files, timeout_seconds, max_bytes
+        )
+    fingerprint = gate_fingerprint(root, mode, commands)
+    cache_dir = root / ".swarmforge/cache/gates"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    marker = cache_dir / f"{mode}.pass"
+    lock_path = cache_dir / f"{mode}.lock"
+    with lock_path.open("a+b") as lock:
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        if marker.is_file() and marker.read_text().strip() == fingerprint:
+            return 0, "pass", 0
+        result = run_commands(
+            root, mode, commands, changed_files, timeout_seconds, max_bytes
+        )
+        if result[0] == 0:
+            temporary = marker.with_suffix(f".tmp-{os.getpid()}")
+            temporary.write_text(fingerprint + "\n")
+            temporary.replace(marker)
+        return result
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     modes = parser.add_mutually_exclusive_group(required=True)
@@ -457,7 +542,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 2
     changed_files = changed_python_files(root) if mode == "fast" else []
-    if configured is None and ["pytest", "-q"] in commands:
+    if configured is None and any(is_default_pytest(command) for command in commands):
         selected_tests, test_selection_reason = affected_tests(
             root, config, changed_python_files(root)
         )
@@ -465,12 +550,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             test_selection = "affected"
             affected_test_count = len(selected_tests)
             commands = [
-                [*command, *selected_tests] if command == ["pytest", "-q"] else command
+                [*command, *selected_tests] if is_default_pytest(command) else command
                 for command in commands
             ]
         else:
             test_selection = "full"
-    exit_code, result, exposed_bytes = run_commands(
+    exit_code, result, exposed_bytes = run_cached_commands(
         root,
         mode,
         commands,

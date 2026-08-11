@@ -80,7 +80,10 @@ def _valid_prompt(prompt: object) -> bool:
     return (
         not path.is_absolute()
         and ".." not in path.parts
-        and path.parts[:2] == ("swarmforge", "roles")
+        and (
+            path.parts[:2] == ("swarmforge", "roles")
+            or path.parts[:3] == (".swarmforge", "runtime", "roles")
+        )
         and len(path.parts) >= 3
     )
 
@@ -197,8 +200,11 @@ def _load_toml(path: Path) -> object:
 def load_registry(root: Path) -> RegistryResult:
     """Load and validate the registry against authoritative backend instances."""
     try:
-        backends = _load_toml(root / "swarmforge" / "backends.toml")
-        registry = _load_toml(root / "swarmforge" / "project-agents.toml")
+        runtime = root / ".swarmforge/runtime"
+        portable = root / "swarmforge"
+        config_root = runtime if (runtime / "backends.toml").is_file() else portable
+        backends = _load_toml(config_root / "backends.toml")
+        registry = _load_toml(config_root / "project-agents.toml")
     except (OSError, tomllib.TOMLDecodeError):
         return RegistryResult({}, {"registry": "invalid-toml"})
     if not isinstance(backends, Mapping) or not isinstance(
@@ -206,14 +212,22 @@ def load_registry(root: Path) -> RegistryResult:
     ):
         return RegistryResult({}, {"registry": "invalid-backends"})
     result = validate_registry(registry, authorized_backends=set(backends["instances"]))
-    roles_root = (root / "swarmforge" / "roles").resolve()
+    roles_roots = (
+        (root / "swarmforge" / "roles").resolve(),
+        (root / ".swarmforge" / "runtime" / "roles").resolve(),
+    )
     agents = dict(result.agents)
     errors = dict(result.errors)
     for name, agent in result.agents.items():
         candidate = root / agent.prompt
         try:
-            candidate.resolve().relative_to(roles_root)
-        except (OSError, ValueError):
+            inside_roles = any(
+                candidate.resolve().is_relative_to(roles_root)
+                for roles_root in roles_roots
+            )
+        except OSError:
+            inside_roles = False
+        if not inside_roles:
             agents.pop(name)
             errors[name] = "invalid-prompt"
             continue

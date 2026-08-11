@@ -359,10 +359,13 @@
   (sh "tmux" "-S" (:tmux-socket ctx) "rename-window" "-t" (str session ":" agent-window) title)
   (sh "tmux" "-S" (:tmux-socket ctx) "set-window-option" "-t" (str session ":" title) "allow-rename" "off"))
 
-(defn write-agent-instruction-file! [role prompt-file]
+(defn write-agent-instruction-file! [ctx role prompt-file]
   (spit (str prompt-file)
-        (str "Read swarmforge/constitution.prompt, then read every file it refers to recursively, and obey all of those instructions.\n"
-             "Read swarmforge/roles/" role ".prompt, then read every file it refers to recursively, and follow all of those instructions.\n")))
+        (str "Read " (:constitution-file ctx) ", then read every file under "
+             (fs/path (:swarm-forge-dir ctx) "constitution" "articles")
+             ", and obey all of those instructions.\n"
+             "Read " (fs/path (:roles-dir ctx) (str role ".prompt"))
+             ", then read every file it refers to recursively, and follow all of those instructions.\n")))
 
 (defn extra-args-prefix [row]
   (let [args (:extra-args row)]
@@ -394,7 +397,7 @@
                   " && export PATH=" (sq (str role-script-dir)) ":$PATH"
                   " && cd " (sq (str role-worktree))
                   " && ")]
-    (write-agent-instruction-file! role prompt-file)
+    (write-agent-instruction-file! ctx role prompt-file)
     (cond-> (str base
                 (case agent
                   "claude" (str "claude --append-system-prompt-file " (sq (str prompt-file)) " --permission-mode acceptEdits -n " (sq (str "SwarmForge " display)) " " (extra-args-prefix row) "\"$(cat " (sq (str prompt-file)) ")\"")
@@ -434,7 +437,7 @@
     (fs/create-dirs launch-dir)
     (fs/create-dirs started-dir)
     (doseq [[index row] (map-indexed vector (:roles ctx))]
-      (write-agent-instruction-file! (:role row)
+      (write-agent-instruction-file! ctx (:role row)
                                      (fs/path (:prompts-dir ctx) (str (:role row) ".md")))
       (spit (str (fs/path launch-dir (:role row))) (str (launch-command ctx index row) "\n"))
       (fs/delete-if-exists (fs/path started-dir (:role row))))))
@@ -552,8 +555,14 @@
 (defn context [working-dir]
   (let [working-dir (fs/absolutize (fs/path working-dir))
         script-dir (fs/parent *file*)
-        swarm-forge-dir (fs/path working-dir "swarmforge")
         state-dir (fs/path working-dir ".swarmforge")
+        runtime-dir (fs/path state-dir "runtime")
+        project-dir (fs/path working-dir "swarmforge")
+        framework-dir (fs/parent script-dir)
+        swarm-forge-dir (cond
+                          (fs/exists? (fs/path runtime-dir "swarmforge.conf")) runtime-dir
+                          (fs/exists? (fs/path project-dir "swarmforge.conf")) project-dir
+                          :else framework-dir)
         daemon-dir (fs/path state-dir "daemon")
         crc (java.util.zip.CRC32.)
         _ (.update crc (.getBytes (str working-dir) java.nio.charset.StandardCharsets/UTF_8))

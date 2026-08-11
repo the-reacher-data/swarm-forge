@@ -11,6 +11,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).parents[2]
 GATE = REPO_ROOT / "swarmforge" / "gates" / "gate.py"
+sys.path.insert(0, str(REPO_ROOT))
 
 
 def run(
@@ -502,6 +503,68 @@ def test_affected_selection_falls_back_without_python_changes(tmp_path: Path) ->
     assert result.stdout == result.stderr == ""
     assert calls.read_text().splitlines()[-1] == "pytest:-q"
     assert telemetry_events(tmp_path)[0]["test_selection_reason"] == "no_changes"
+
+
+def test_default_commands_use_uv_for_locked_projects(tmp_path: Path) -> None:
+    from swarmforge.gates.gate import default_commands
+
+    (tmp_path / "uv.lock").write_text("")
+    (tmp_path / "tests").mkdir()
+
+    assert default_commands(tmp_path, "stop") == [
+        ["uv", "run", "ruff", "check", "."],
+        ["uv", "run", "ruff", "format", "--check", "."],
+        ["uv", "run", "pytest", "-q"],
+    ]
+
+
+def test_gate_loads_ignored_local_config_before_portable_config(tmp_path: Path) -> None:
+    from swarmforge.gates.gate import load_config
+
+    (tmp_path / "swarmforge").mkdir()
+    (tmp_path / "swarmforge/python-gates.toml").write_text("[gate]\ntimeout_seconds=1")
+    (tmp_path / ".swarmforge").mkdir()
+    (tmp_path / ".swarmforge/python-gates.toml").write_text(
+        "[gate]\ntimeout_seconds=99"
+    )
+
+    assert load_config(tmp_path)["gate"] == {"timeout_seconds": 99}
+
+
+def test_stop_gate_reuses_pass_for_identical_repository_state(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    init_repo(project)
+    (project / ".gitignore").write_text(".swarmforge/\n")
+    (project / "pyproject.toml").write_text(
+        "[project]\nname='sample'\nversion='0.1.0'\n"
+    )
+    (project / "swarmforge").mkdir()
+    (project / "swarmforge/python-gates.toml").write_text(
+        "[commands]\nstop=[['quality-check']]\n"
+    )
+    source = project / "src/app.py"
+    source.parent.mkdir()
+    source.write_text("VALUE = 1\n")
+    run("git", "add", ".", cwd=project)
+    run("git", "commit", "-q", "-m", "initial", cwd=project)
+    calls = tmp_path / "calls.log"
+    fake_bin = tmp_path / "bin"
+    write_executable(
+        fake_bin / "quality-check",
+        '#!/bin/sh\nprintf "run\\n" >> "$SWARMFORGE_TEST_CALLS"\n',
+    )
+    env = os.environ | {
+        "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+        "SWARMFORGE_TEST_CALLS": str(calls),
+    }
+
+    assert gate(project, "--stop", env).returncode == 0
+    assert gate(project, "--stop", env).returncode == 0
+    source.write_text("VALUE = 2\n")
+    assert gate(project, "--stop", env).returncode == 0
+
+    assert calls.read_text().splitlines() == ["run", "run"]
 
 
 def test_configured_commands_are_not_rewritten_by_affected_selection(

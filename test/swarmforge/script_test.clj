@@ -150,6 +150,16 @@
       (finally
         (fs/delete-tree root)))))
 
+(deftest swarmforge-launcher-falls-back-to-framework-config
+  (let [root (tmp-dir)]
+    (try
+      (let [result (run {:dir root} (script "swarmforge.bb") "--test-parse" (str root))]
+        (is (= 0 (:exit result)))
+        (is (str/includes? (:out result) "planner Planner"))
+        (is (str/includes? (:out result) "coder Coder")))
+      (finally
+        (fs/delete-tree root)))))
+
 (deftest launcher-prepares-codegraph-only-with-root-consent
   (let [root (tmp-dir)
         fake-bin (fs/path root "bin")

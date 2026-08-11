@@ -46,6 +46,29 @@ mandatory = true
     assert agent.routing.mandatory is True
 
 
+def test_registry_loads_ignored_runtime_agents(tmp_path: Path) -> None:
+    runtime = tmp_path / ".swarmforge/runtime"
+    (runtime / "roles").mkdir(parents=True)
+    (runtime / "backends.toml").write_text(
+        "[instances.claude-work]\nkind='claude'\ncommand=['claude']\n"
+    )
+    (runtime / "project-agents.toml").write_text(
+        """
+[agents.data-engineer]
+role = "data-engineer"
+backend_instance = "claude-work"
+mode = "lazy"
+prompt = ".swarmforge/runtime/roles/data-engineer.prompt"
+""".strip()
+    )
+    (runtime / "roles/data-engineer.prompt").write_text("Review data changes.\n")
+
+    result = load_registry(tmp_path)
+
+    assert set(result.agents) == {"data-engineer"}
+    assert result.errors == {}
+
+
 def test_registry_excludes_each_untrusted_agent_with_bounded_reason(
     tmp_path: Path,
 ) -> None:
