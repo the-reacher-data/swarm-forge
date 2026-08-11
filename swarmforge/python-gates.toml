@@ -8,8 +8,9 @@ timeout_seconds = 180
 # shell.
 
 # Optional standard hardening profile. Enable it in the target repository,
-# replace `your_package`, declare the `dev` and `hardening` dependency groups,
-# then run `./swarm bootstrap <project-root>`.
+# replace `your_package`, declare `hardening` as a dependency group and `dev`
+# as either a dependency group or an existing optional extra, then run
+# `./swarm bootstrap <project-root>`.
 # Mutation testing remains explicit: this mode never runs from fast,
 # pre-handoff, or pre-complete hooks.
 #

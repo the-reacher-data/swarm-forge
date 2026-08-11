@@ -99,6 +99,10 @@ dev = ["pytest", "pytest-cov", "ruff"]
 hardening = ["mutmut", "pytest-crap", "xenon", "pylint"]
 ```
 
+Projects that already expose `dev` through `[project.optional-dependencies]`
+remain supported: `bootstrap` preserves that layout and uses `--extra dev`,
+while keeping `hardening` as an explicit dependency group.
+
 `pytest-bdd` belongs in `dev` only for projects that execute Gherkin features.
 Because uv shares its download cache, each repository remains reproducible
 without paying the full installation cost again.

@@ -99,6 +99,28 @@ docs = ["mkdocs"]
     assert project_groups(tmp_path) == ("dev", "hardening")
 
 
+def test_optional_dev_extra_is_preserved_as_a_managed_group(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        """
+[project]
+name = "sample"
+version = "0.1.0"
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[dependency-groups]
+hardening = ["mutmut", "pytest-crap", "xenon", "pylint"]
+""".strip()
+    )
+
+    assert project_groups(tmp_path) == ("dev", "hardening")
+    assert bootstrap_commands(tmp_path) == (
+        ("uv", "add", "--optional", "dev", "--no-sync", "pytest-cov"),
+        ("uv", "sync", "--extra", "dev", "--group", "hardening"),
+    )
+
+
 def test_missing_group_packages_normalizes_versioned_requirements(
     tmp_path: Path,
 ) -> None:

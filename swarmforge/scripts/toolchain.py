@@ -93,13 +93,44 @@ def inspect_machine(
 
 def project_groups(root: Path) -> tuple[str, ...]:
     """Return managed dependency groups already declared by the project."""
+    groups = _managed_group_requirements(root)
+    return tuple(group for group in MANAGED_GROUPS if group in groups)
+
+
+def _managed_group_requirements(
+    root: Path,
+) -> dict[str, tuple[str, list[object]]]:
+    """Return managed requirements and whether uv treats them as a group or extra."""
     document = _toml(root / "pyproject.toml")
     raw_groups = document.get("dependency-groups", {})
     if not isinstance(raw_groups, dict):
         raise ValueError("pyproject.toml: dependency-groups must be a table")
-    return tuple(
-        group for group in MANAGED_GROUPS if isinstance(raw_groups.get(group), list)
-    )
+    project = document.get("project", {})
+    if not isinstance(project, dict):
+        raise ValueError("pyproject.toml: project must be a table")
+    raw_extras = project.get("optional-dependencies", {})
+    if not isinstance(raw_extras, dict):
+        raise ValueError("pyproject.toml: project.optional-dependencies must be a table")
+
+    groups: dict[str, tuple[str, list[object]]] = {}
+    for group in MANAGED_GROUPS:
+        if group in raw_groups:
+            requirements = raw_groups[group]
+            manager = "group"
+        elif group in raw_extras:
+            requirements = raw_extras[group]
+            manager = "optional"
+        else:
+            continue
+        if not isinstance(requirements, list):
+            location = (
+                f"dependency-groups.{group}"
+                if manager == "group"
+                else f"project.optional-dependencies.{group}"
+            )
+            raise ValueError(f"pyproject.toml: {location} must be an array")
+        groups[group] = (manager, requirements)
+    return groups
 
 
 def _normalized_requirement(value: object) -> str | None:
@@ -113,17 +144,10 @@ def _normalized_requirement(value: object) -> str | None:
 
 def missing_group_packages(root: Path) -> dict[str, tuple[str, ...]]:
     """Return standard packages absent from each managed dependency group."""
-    document = _toml(root / "pyproject.toml")
-    raw_groups = document.get("dependency-groups", {})
-    if not isinstance(raw_groups, dict):
-        raise ValueError("pyproject.toml: dependency-groups must be a table")
+    groups = _managed_group_requirements(root)
     missing: dict[str, tuple[str, ...]] = {}
     for group, expected in STANDARD_GROUP_PACKAGES.items():
-        raw_requirements = raw_groups.get(group, [])
-        if not isinstance(raw_requirements, list):
-            raise ValueError(
-                f"pyproject.toml: dependency-groups.{group} must be an array"
-            )
+        _, raw_requirements = groups.get(group, ("group", []))
         present = {
             normalized
             for requirement in raw_requirements
@@ -139,11 +163,16 @@ def bootstrap_commands(root: Path) -> tuple[tuple[str, ...], ...]:
     """Build bounded argv to declare, sync, and index the standard toolchain."""
     commands: list[tuple[str, ...]] = []
     if (root / "pyproject.toml").is_file():
+        groups = _managed_group_requirements(root)
         for group, packages in missing_group_packages(root).items():
-            commands.append(("uv", "add", "--group", group, "--no-sync", *packages))
+            manager = groups.get(group, ("group", []))[0]
+            option = "--optional" if manager == "optional" else "--group"
+            commands.append(("uv", "add", option, group, "--no-sync", *packages))
         uv_command = ["uv", "sync"]
         for group in MANAGED_GROUPS:
-            uv_command.extend(("--group", group))
+            manager = groups.get(group, ("group", []))[0]
+            option = "--extra" if manager == "optional" else "--group"
+            uv_command.extend((option, group))
         commands.append(tuple(uv_command))
     if (root / ".git").exists() and not (root / ".codegraph").exists():
         commands.append(("codegraph", "init", "-i"))
