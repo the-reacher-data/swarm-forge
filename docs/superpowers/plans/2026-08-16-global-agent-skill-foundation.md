@@ -393,17 +393,20 @@ Commit:
 
 **Interfaces:**
 
-- Worker and verifier use independent contexts and different providers when available.
+- Worker and verifier use fresh, independent native subagent contexts.
+- The council uses two read-only native subagents after verifier PASS.
 - Exit requires all core structural, trigger, permission, output, equivalence,
   and installation cases to pass, or BLOCKED after five iterations.
 - Follow-up plans use the final inventory and baseline reports and name exact
   repository files and gates.
 
-- [ ] **Step 1: Run a five-iteration Paseo improvement loop**
+- [ ] **Step 1: Run a five-iteration native subagent improvement loop**
 
 Give the worker the spec, plan, raw artifacts, and failing cases. Give the
 verifier artifacts and cases but not the worker's private reasoning or intended
-fixes.
+fixes. After verifier PASS, dispatch two read-only council reviewers for
+architecture/permissions and simplicity/duplication. Send only supported council
+findings through another bounded worker-verifier correction.
 
 - [ ] **Step 2: Run all foundation tests**
 

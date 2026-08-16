@@ -57,11 +57,15 @@ dependency directories, worktrees, and caches are excluded.
 | `data-platform-mongo-cdc-daemon` | No current local agent definition; its Loom usage is still in scope for skill routing |
 
 All first-party `SKILL.md` files in these repositories are also in scope,
-including architecture, release, Paseo, Streamlit, data science, ETL, data
+including architecture, release, Streamlit, data science, ETL, data
 contracts, Prefect, Loom, cross-repository change, CDC decomposition, and
 catalog skills. The implementation must generate a manifest from the filesystem
 at execution time so newly discovered first-party definitions are not silently
 omitted.
+
+Existing Paseo artifacts are inventoried only so their disposition is explicit.
+They are not an execution dependency and must not be selected by the global
+workflow.
 
 ### Global core roles
 
@@ -205,8 +209,9 @@ The improvement project itself uses a worker/verifier loop:
 5. Correct supported failures and repeat.
 6. Install only after the canonical artifact passes.
 
-The worker and verifier use independent contexts and, when supported by the
-orchestrator, different providers. Each artifact group has a maximum of five
+The worker and verifier use fresh, independent runtime-native subagent contexts.
+The council uses two additional read-only contexts and aggregates findings by
+evidence rather than vote. Each artifact group has a maximum of five
 iterations and a maximum elapsed time recorded in the run manifest. Exhausting
 either bound produces `BLOCKED` with evidence; it never produces a false `OK`.
 
@@ -267,6 +272,7 @@ The project receives `OK` only when:
 ## Non-goals
 
 - Redesigning SwarmForge or making it the delivery mechanism.
+- Depending on Paseo for loops, councils, agent lifecycle, or installation.
 - Rewriting application or infrastructure code unrelated to agent/skill
   discovery and validation.
 - Making every specialist global.
@@ -285,4 +291,3 @@ The project receives `OK` only when:
 - Automated structural, trigger, permission, output-contract, and installation
   checks where deterministic automation is possible.
 - A concise migration and rollback record for both Claude profiles and Codex.
-
