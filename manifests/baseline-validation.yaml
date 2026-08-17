@@ -10,9 +10,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-ml/.claude/agents/ml-lifecycle-orchestrator.md
 - code: description-missing-trigger
   message: description must state "Use this agent when"
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: description-missing-trigger
-  message: description must state "Use this agent when"
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: description-missing-trigger
   message: description must state "Use this agent when"
@@ -25,16 +22,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: description-missing-trigger
   message: description must state "Use this agent when"
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: description-missing-trigger
-  message: description must state "Use this agent when"
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: description-missing-trigger
   message: description must state "Use this agent when"
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: description-missing-trigger
-  message: description must state "Use this agent when"
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: description-missing-trigger
   message: description must state "Use this agent when"
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -47,9 +38,6 @@ findings:
 - code: description-missing-trigger
   message: description must state "Use this agent when"
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: description-missing-trigger
-  message: description must state "Use this agent when"
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: description-missing-trigger
   message: description must state "Use this agent when"
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -103,9 +91,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
 - code: description-missing-typical-triggers
   message: description must summarize scenarios after "Typical triggers include"
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: description-missing-typical-triggers
-  message: description must summarize scenarios after "Typical triggers include"
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: description-missing-typical-triggers
   message: description must summarize scenarios after "Typical triggers include"
@@ -118,16 +103,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: description-missing-typical-triggers
   message: description must summarize scenarios after "Typical triggers include"
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: description-missing-typical-triggers
-  message: description must summarize scenarios after "Typical triggers include"
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: description-missing-typical-triggers
   message: description must summarize scenarios after "Typical triggers include"
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: description-missing-typical-triggers
-  message: description must summarize scenarios after "Typical triggers include"
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: description-missing-typical-triggers
   message: description must summarize scenarios after "Typical triggers include"
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -140,9 +119,6 @@ findings:
 - code: description-missing-typical-triggers
   message: description must summarize scenarios after "Typical triggers include"
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: description-missing-typical-triggers
-  message: description must summarize scenarios after "Typical triggers include"
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: description-missing-typical-triggers
   message: description must summarize scenarios after "Typical triggers include"
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -196,9 +172,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
 - code: description-missing-when-pointer
   message: description must point to the body section "When to invoke"
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: description-missing-when-pointer
-  message: description must point to the body section "When to invoke"
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: description-missing-when-pointer
   message: description must point to the body section "When to invoke"
@@ -211,16 +184,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: description-missing-when-pointer
   message: description must point to the body section "When to invoke"
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: description-missing-when-pointer
-  message: description must point to the body section "When to invoke"
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: description-missing-when-pointer
   message: description must point to the body section "When to invoke"
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: description-missing-when-pointer
-  message: description must point to the body section "When to invoke"
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: description-missing-when-pointer
   message: description must point to the body section "When to invoke"
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -233,9 +200,6 @@ findings:
 - code: description-missing-when-pointer
   message: description must point to the body section "When to invoke"
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: description-missing-when-pointer
-  message: description must point to the body section "When to invoke"
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: description-missing-when-pointer
   message: description must point to the body section "When to invoke"
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -343,9 +307,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-pipelines/.claude/agents/etl-platform-engineer.md
 - code: missing-color
   message: color is required
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: missing-color
-  message: color is required
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: missing-color
   message: color is required
@@ -358,16 +319,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: missing-color
   message: color is required
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: missing-color
-  message: color is required
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: missing-color
   message: color is required
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: missing-color
-  message: color is required
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: missing-color
   message: color is required
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -380,9 +335,6 @@ findings:
 - code: missing-color
   message: color is required
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: missing-color
-  message: color is required
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: missing-color
   message: color is required
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -436,9 +388,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
 - code: missing-core-responsibilities
   message: agent body requires a 'Core responsibilities' section
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: missing-core-responsibilities
-  message: agent body requires a 'Core responsibilities' section
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: missing-core-responsibilities
   message: agent body requires a 'Core responsibilities' section
@@ -451,16 +400,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: missing-core-responsibilities
   message: agent body requires a 'Core responsibilities' section
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: missing-core-responsibilities
-  message: agent body requires a 'Core responsibilities' section
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: missing-core-responsibilities
   message: agent body requires a 'Core responsibilities' section
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: missing-core-responsibilities
-  message: agent body requires a 'Core responsibilities' section
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: missing-core-responsibilities
   message: agent body requires a 'Core responsibilities' section
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -473,9 +416,6 @@ findings:
 - code: missing-core-responsibilities
   message: agent body requires a 'Core responsibilities' section
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: missing-core-responsibilities
-  message: agent body requires a 'Core responsibilities' section
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: missing-core-responsibilities
   message: agent body requires a 'Core responsibilities' section
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -529,9 +469,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
 - code: missing-edge-cases
   message: agent body requires a 'Edge cases' section
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: missing-edge-cases
-  message: agent body requires a 'Edge cases' section
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: missing-edge-cases
   message: agent body requires a 'Edge cases' section
@@ -544,16 +481,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: missing-edge-cases
   message: agent body requires a 'Edge cases' section
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: missing-edge-cases
-  message: agent body requires a 'Edge cases' section
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: missing-edge-cases
   message: agent body requires a 'Edge cases' section
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: missing-edge-cases
-  message: agent body requires a 'Edge cases' section
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: missing-edge-cases
   message: agent body requires a 'Edge cases' section
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -566,9 +497,6 @@ findings:
 - code: missing-edge-cases
   message: agent body requires a 'Edge cases' section
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: missing-edge-cases
-  message: agent body requires a 'Edge cases' section
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: missing-edge-cases
   message: agent body requires a 'Edge cases' section
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -697,9 +625,6 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: missing-model
   message: model is required
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: missing-model
-  message: model is required
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: missing-model
   message: model is required
@@ -716,9 +641,6 @@ findings:
 - code: missing-model
   message: model is required
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: missing-model
-  message: model is required
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: missing-model
   message: model is required
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -772,9 +694,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
 - code: missing-output-format
   message: agent body requires a 'Output format' section
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: missing-output-format
-  message: agent body requires a 'Output format' section
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: missing-output-format
   message: agent body requires a 'Output format' section
@@ -787,16 +706,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: missing-output-format
   message: agent body requires a 'Output format' section
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: missing-output-format
-  message: agent body requires a 'Output format' section
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: missing-output-format
   message: agent body requires a 'Output format' section
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: missing-output-format
-  message: agent body requires a 'Output format' section
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: missing-output-format
   message: agent body requires a 'Output format' section
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -809,9 +722,6 @@ findings:
 - code: missing-output-format
   message: agent body requires a 'Output format' section
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: missing-output-format
-  message: agent body requires a 'Output format' section
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: missing-output-format
   message: agent body requires a 'Output format' section
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -865,9 +775,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
 - code: missing-process
   message: agent body requires a 'Process' section
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: missing-process
-  message: agent body requires a 'Process' section
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: missing-process
   message: agent body requires a 'Process' section
@@ -878,9 +785,6 @@ findings:
 - code: missing-process
   message: agent body requires a 'Process' section
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
-- code: missing-process
-  message: agent body requires a 'Process' section
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: missing-process
   message: agent body requires a 'Process' section
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -940,9 +844,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
 - code: missing-quality-standards
   message: agent body requires a 'Quality standards' section
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: missing-quality-standards
-  message: agent body requires a 'Quality standards' section
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: missing-quality-standards
   message: agent body requires a 'Quality standards' section
@@ -955,16 +856,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: missing-quality-standards
   message: agent body requires a 'Quality standards' section
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: missing-quality-standards
-  message: agent body requires a 'Quality standards' section
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: missing-quality-standards
   message: agent body requires a 'Quality standards' section
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: missing-quality-standards
-  message: agent body requires a 'Quality standards' section
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: missing-quality-standards
   message: agent body requires a 'Quality standards' section
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -977,9 +872,6 @@ findings:
 - code: missing-quality-standards
   message: agent body requires a 'Quality standards' section
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: missing-quality-standards
-  message: agent body requires a 'Quality standards' section
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: missing-quality-standards
   message: agent body requires a 'Quality standards' section
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -1033,9 +925,6 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
 - code: missing-when-to-invoke
   message: agent body requires a 'When to invoke' section
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: missing-when-to-invoke
-  message: agent body requires a 'When to invoke' section
   path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
 - code: missing-when-to-invoke
   message: agent body requires a 'When to invoke' section
@@ -1048,16 +937,10 @@ findings:
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: missing-when-to-invoke
   message: agent body requires a 'When to invoke' section
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: missing-when-to-invoke
-  message: agent body requires a 'When to invoke' section
   path: home:.aisw/profiles/personal/agents/task-orchestrator.md
 - code: missing-when-to-invoke
   message: agent body requires a 'When to invoke' section
   path: home:.aisw/profiles/personal/agents/test-writer.md
-- code: missing-when-to-invoke
-  message: agent body requires a 'When to invoke' section
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
 - code: missing-when-to-invoke
   message: agent body requires a 'When to invoke' section
   path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
@@ -1070,9 +953,6 @@ findings:
 - code: missing-when-to-invoke
   message: agent body requires a 'When to invoke' section
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: missing-when-to-invoke
-  message: agent body requires a 'When to invoke' section
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: missing-when-to-invoke
   message: agent body requires a 'When to invoke' section
   path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
@@ -1134,22 +1014,10 @@ findings:
   path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/release-stable/SKILL.md
 - code: read-only-agent-has-write-tool
   message: 'read-only agent grants write-capable tools: Bash'
-  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
-- code: read-only-agent-has-write-tool
-  message: 'read-only agent grants write-capable tools: Bash'
   path: home:.aisw/profiles/personal/agents/performance-reviewer.md
 - code: read-only-agent-has-write-tool
   message: 'read-only agent grants write-capable tools: Bash'
-  path: home:.aisw/profiles/personal/agents/security-reviewer.md
-- code: read-only-agent-has-write-tool
-  message: 'read-only agent grants write-capable tools: Bash'
-  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
-- code: read-only-agent-has-write-tool
-  message: 'read-only agent grants write-capable tools: Bash'
   path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
-- code: read-only-agent-has-write-tool
-  message: 'read-only agent grants write-capable tools: Bash'
-  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
 - code: read-only-agent-has-write-tool
   message: 'read-only agent grants write-capable tools: Bash'
   path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/cost-reviewer.md
@@ -1262,5 +1130,5 @@ findings:
   message: skill description must start exactly with "Use when"
   path: home:Documents/CUIMO/metodologia/skills/cuimo-engineering-workflow/SKILL.md
 summary:
-  artifacts: 116
-  findings: 414
+  artifacts: 133
+  findings: 370

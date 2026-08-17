@@ -335,6 +335,24 @@ artifacts:
 - first_party: true
   installations:
   - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/implementer.md
+    runtime: claude
+  kind: agent
+  name: implementer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/implementer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/lead-engineer.md
+    runtime: claude
+  kind: agent
+  name: lead-engineer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/lead-engineer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
     path: home:.aisw/profiles/personal/agents/performance-reviewer.md
     runtime: claude
   kind: agent
@@ -344,12 +362,30 @@ artifacts:
 - first_party: true
   installations:
   - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/proposal-critic.md
+    runtime: claude
+  kind: agent
+  name: proposal-critic
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/proposal-critic.md
+- first_party: true
+  installations:
+  - owner: claude-personal
     path: home:.aisw/profiles/personal/agents/security-reviewer.md
     runtime: claude
   kind: agent
   name: security-reviewer
   owner: cuimo
   source: home:.aisw/profiles/personal/agents/security-reviewer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/simplicity-reviewer.md
+    runtime: claude
+  kind: agent
+  name: simplicity-reviewer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/simplicity-reviewer.md
 - first_party: true
   installations:
   - owner: claude-personal
@@ -368,6 +404,15 @@ artifacts:
   name: test-writer
   owner: cuimo
   source: home:.aisw/profiles/personal/agents/test-writer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/verifier.md
+    runtime: claude
+  kind: agent
+  name: verifier
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/verifier.md
 - first_party: true
   installations:
   - owner: claude-personal
@@ -542,6 +587,24 @@ artifacts:
 - first_party: true
   installations:
   - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/implementer.md
+    runtime: claude
+  kind: agent
+  name: implementer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/implementer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/lead-engineer.md
+    runtime: claude
+  kind: agent
+  name: lead-engineer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/lead-engineer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
     path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
     runtime: claude
   kind: agent
@@ -551,12 +614,30 @@ artifacts:
 - first_party: true
   installations:
   - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/proposal-critic.md
+    runtime: claude
+  kind: agent
+  name: proposal-critic
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/proposal-critic.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
     path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
     runtime: claude
   kind: agent
   name: security-reviewer
   owner: cuimo
   source: home:.aisw/profiles/trabajo/agents/security-reviewer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/simplicity-reviewer.md
+    runtime: claude
+  kind: agent
+  name: simplicity-reviewer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/simplicity-reviewer.md
 - first_party: true
   installations:
   - owner: claude-trabajo
@@ -575,6 +656,15 @@ artifacts:
   name: test-writer
   owner: cuimo
   source: home:.aisw/profiles/trabajo/agents/test-writer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/verifier.md
+    runtime: claude
+  kind: agent
+  name: verifier
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/verifier.md
 - first_party: true
   installations:
   - owner: claude-trabajo
@@ -770,12 +860,39 @@ artifacts:
 - first_party: true
   installations:
   - owner: codex-global
+    path: home:.codex/agents/architecture-reviewer.toml
+    runtime: codex
+  kind: agent
+  name: architecture-reviewer
+  owner: cuimo
+  source: home:.codex/agents/architecture-reviewer.toml
+- first_party: true
+  installations:
+  - owner: codex-global
     path: home:.codex/agents/code-implementer.md
     runtime: codex
   kind: agent
   name: code-implementer
   owner: cuimo
   source: home:.codex/agents/code-implementer.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/implementer.toml
+    runtime: codex
+  kind: agent
+  name: implementer
+  owner: cuimo
+  source: home:.codex/agents/implementer.toml
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/lead-engineer.toml
+    runtime: codex
+  kind: agent
+  name: lead-engineer
+  owner: cuimo
+  source: home:.codex/agents/lead-engineer.toml
 - first_party: true
   installations:
   - owner: codex-global
@@ -788,12 +905,39 @@ artifacts:
 - first_party: true
   installations:
   - owner: codex-global
+    path: home:.codex/agents/proposal-critic.toml
+    runtime: codex
+  kind: agent
+  name: proposal-critic
+  owner: cuimo
+  source: home:.codex/agents/proposal-critic.toml
+- first_party: true
+  installations:
+  - owner: codex-global
     path: home:.codex/agents/security-reviewer.md
     runtime: codex
   kind: agent
   name: security-reviewer
   owner: cuimo
   source: home:.codex/agents/security-reviewer.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/security-reviewer.toml
+    runtime: codex
+  kind: agent
+  name: security-reviewer
+  owner: cuimo
+  source: home:.codex/agents/security-reviewer.toml
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/simplicity-reviewer.toml
+    runtime: codex
+  kind: agent
+  name: simplicity-reviewer
+  owner: cuimo
+  source: home:.codex/agents/simplicity-reviewer.toml
 - first_party: true
   installations:
   - owner: codex-global
@@ -812,6 +956,15 @@ artifacts:
   name: test-writer
   owner: cuimo
   source: home:.codex/agents/test-writer.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/verifier.toml
+    runtime: codex
+  kind: agent
+  name: verifier
+  owner: cuimo
+  source: home:.codex/agents/verifier.toml
 - first_party: false
   installations:
   - owner: codex-global

@@ -1,0 +1,20 @@
+version = 1
+backup_path = ".cuimo/agent-backups"
+
+[[targets]]
+name = "codex-global"
+source = "codex"
+profile = ".codex"
+replace = []
+
+[[targets]]
+name = "claude-personal"
+source = "claude"
+profile = ".aisw/profiles/personal"
+replace = ["architecture-reviewer.md", "security-reviewer.md"]
+
+[[targets]]
+name = "claude-trabajo"
+source = "claude"
+profile = ".aisw/profiles/trabajo"
+replace = ["architecture-reviewer.md", "security-reviewer.md"]

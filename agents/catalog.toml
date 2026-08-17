@@ -20,6 +20,13 @@ sources = [
   { path = "codex/simplicity-reviewer.toml", kind = "agent", name = "simplicity-reviewer" },
 
   # Global Codex agents owned by CUIMO.
+  { base = "home", path = ".codex/agents/lead-engineer.toml", kind = "agent", name = "lead-engineer" },
+  { base = "home", path = ".codex/agents/proposal-critic.toml", kind = "agent", name = "proposal-critic" },
+  { base = "home", path = ".codex/agents/implementer.toml", kind = "agent", name = "implementer" },
+  { base = "home", path = ".codex/agents/verifier.toml", kind = "agent", name = "verifier" },
+  { base = "home", path = ".codex/agents/architecture-reviewer.toml", kind = "agent", name = "architecture-reviewer" },
+  { base = "home", path = ".codex/agents/security-reviewer.toml", kind = "agent", name = "security-reviewer" },
+  { base = "home", path = ".codex/agents/simplicity-reviewer.toml", kind = "agent", name = "simplicity-reviewer" },
   { base = "home", path = ".codex/agents/architecture-reviewer.md", kind = "agent", name = "architecture-reviewer" },
   { base = "home", path = ".codex/agents/code-implementer.md", kind = "agent", name = "code-implementer" },
   { base = "home", path = ".codex/agents/performance-reviewer.md", kind = "agent", name = "performance-reviewer" },
@@ -29,6 +36,11 @@ sources = [
 
   # Global Claude agents owned by CUIMO. Copies are distinct canonical sources.
   { base = "home", path = ".aisw/profiles/personal/agents/architecture-reviewer.md", kind = "agent", name = "architecture-reviewer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/lead-engineer.md", kind = "agent", name = "lead-engineer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/proposal-critic.md", kind = "agent", name = "proposal-critic" },
+  { base = "home", path = ".aisw/profiles/personal/agents/implementer.md", kind = "agent", name = "implementer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/verifier.md", kind = "agent", name = "verifier" },
+  { base = "home", path = ".aisw/profiles/personal/agents/simplicity-reviewer.md", kind = "agent", name = "simplicity-reviewer" },
   { base = "home", path = ".aisw/profiles/personal/agents/ci-cd-platform-engineer.md", kind = "agent", name = "ci-cd-platform-engineer" },
   { base = "home", path = ".aisw/profiles/personal/agents/code-implementer.md", kind = "agent", name = "code-implementer" },
   { base = "home", path = ".aisw/profiles/personal/agents/data-architecture-engineer.md", kind = "agent", name = "data-architecture-engineer" },
@@ -37,6 +49,11 @@ sources = [
   { base = "home", path = ".aisw/profiles/personal/agents/task-orchestrator.md", kind = "agent", name = "task-orchestrator" },
   { base = "home", path = ".aisw/profiles/personal/agents/test-writer.md", kind = "agent", name = "test-writer" },
   { base = "home", path = ".aisw/profiles/trabajo/agents/architecture-reviewer.md", kind = "agent", name = "architecture-reviewer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/lead-engineer.md", kind = "agent", name = "lead-engineer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/proposal-critic.md", kind = "agent", name = "proposal-critic" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/implementer.md", kind = "agent", name = "implementer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/verifier.md", kind = "agent", name = "verifier" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/simplicity-reviewer.md", kind = "agent", name = "simplicity-reviewer" },
   { base = "home", path = ".aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md", kind = "agent", name = "ci-cd-platform-engineer" },
   { base = "home", path = ".aisw/profiles/trabajo/agents/code-implementer.md", kind = "agent", name = "code-implementer" },
   { base = "home", path = ".aisw/profiles/trabajo/agents/data-architecture-engineer.md", kind = "agent", name = "data-architecture-engineer" },

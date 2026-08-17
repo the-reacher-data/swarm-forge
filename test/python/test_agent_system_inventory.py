@@ -447,12 +447,17 @@ def test_repository_catalog_migrates_all_known_global_cuimo_sources(
         "ci-cd-platform-engineer",
         "code-implementer",
         "data-architecture-engineer",
+        "implementer",
+        "lead-engineer",
         "performance-reviewer",
+        "proposal-critic",
         "security-reviewer",
+        "simplicity-reviewer",
         "task-orchestrator",
         "test-writer",
+        "verifier",
     }
-    assert len(by_kind["agent"]) == 22
+    assert len(by_kind["agent"]) == 39
     assert {source.name for source in by_kind["skill"]} == {
         "anti-overengineering",
         "codegraph-query",
