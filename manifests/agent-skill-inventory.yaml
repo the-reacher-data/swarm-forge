@@ -1,0 +1,1642 @@
+artifacts:
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-agent/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-agent
+  owner: null
+  source: home:.agents/skills/firecrawl-agent/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-build-interact/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-build-interact
+  owner: null
+  source: home:.agents/skills/firecrawl-build-interact/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-build-onboarding/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-build-onboarding
+  owner: null
+  source: home:.agents/skills/firecrawl-build-onboarding/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-build-scrape/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-build-scrape
+  owner: null
+  source: home:.agents/skills/firecrawl-build-scrape/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-build-search/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-build-search
+  owner: null
+  source: home:.agents/skills/firecrawl-build-search/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-build/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-build
+  owner: null
+  source: home:.agents/skills/firecrawl-build/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-company-directories/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-company-directories
+  owner: null
+  source: home:.agents/skills/firecrawl-company-directories/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-competitive-intel/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-competitive-intel
+  owner: null
+  source: home:.agents/skills/firecrawl-competitive-intel/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-crawl/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-crawl
+  owner: null
+  source: home:.agents/skills/firecrawl-crawl/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-dashboard-reporting/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-dashboard-reporting
+  owner: null
+  source: home:.agents/skills/firecrawl-dashboard-reporting/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-deep-research/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-deep-research
+  owner: null
+  source: home:.agents/skills/firecrawl-deep-research/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-demo-walkthrough/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-demo-walkthrough
+  owner: null
+  source: home:.agents/skills/firecrawl-demo-walkthrough/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-developer-index/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-developer-index
+  owner: null
+  source: home:.agents/skills/firecrawl-developer-index/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-download/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-download
+  owner: null
+  source: home:.agents/skills/firecrawl-download/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-interact/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-interact
+  owner: null
+  source: home:.agents/skills/firecrawl-interact/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-knowledge-base/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-knowledge-base
+  owner: null
+  source: home:.agents/skills/firecrawl-knowledge-base/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-knowledge-ingest/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-knowledge-ingest
+  owner: null
+  source: home:.agents/skills/firecrawl-knowledge-ingest/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-lead-gen/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-lead-gen
+  owner: null
+  source: home:.agents/skills/firecrawl-lead-gen/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-lead-research/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-lead-research
+  owner: null
+  source: home:.agents/skills/firecrawl-lead-research/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-map/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-map
+  owner: null
+  source: home:.agents/skills/firecrawl-map/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-market-research/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-market-research
+  owner: null
+  source: home:.agents/skills/firecrawl-market-research/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-monitor/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-monitor
+  owner: null
+  source: home:.agents/skills/firecrawl-monitor/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-parse/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-parse
+  owner: null
+  source: home:.agents/skills/firecrawl-parse/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-qa/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-qa
+  owner: null
+  source: home:.agents/skills/firecrawl-qa/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-research-index/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-research-index
+  owner: null
+  source: home:.agents/skills/firecrawl-research-index/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-research-papers/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-research-papers
+  owner: null
+  source: home:.agents/skills/firecrawl-research-papers/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-scrape/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-scrape
+  owner: null
+  source: home:.agents/skills/firecrawl-scrape/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-search/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-search
+  owner: null
+  source: home:.agents/skills/firecrawl-search/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-seo-audit/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-seo-audit
+  owner: null
+  source: home:.agents/skills/firecrawl-seo-audit/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-shop/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-shop
+  owner: null
+  source: home:.agents/skills/firecrawl-shop/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-website-design-clone/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-website-design-clone
+  owner: null
+  source: home:.agents/skills/firecrawl-website-design-clone/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl-workflows/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl-workflows
+  owner: null
+  source: home:.agents/skills/firecrawl-workflows/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/firecrawl/SKILL.md
+    runtime: codex
+  kind: skill
+  name: firecrawl
+  owner: null
+  source: home:.agents/skills/firecrawl/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
+    runtime: claude
+  kind: agent
+  name: architecture-reviewer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/architecture-reviewer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
+    runtime: claude
+  kind: agent
+  name: ci-cd-platform-engineer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/ci-cd-platform-engineer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/code-implementer.md
+    runtime: claude
+  kind: agent
+  name: code-implementer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/code-implementer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/data-architecture-engineer.md
+    runtime: claude
+  kind: agent
+  name: data-architecture-engineer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/data-architecture-engineer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/performance-reviewer.md
+    runtime: claude
+  kind: agent
+  name: performance-reviewer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/performance-reviewer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/security-reviewer.md
+    runtime: claude
+  kind: agent
+  name: security-reviewer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/security-reviewer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/task-orchestrator.md
+    runtime: claude
+  kind: agent
+  name: task-orchestrator
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/task-orchestrator.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/agents/test-writer.md
+    runtime: claude
+  kind: agent
+  name: test-writer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/agents/test-writer.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/anti-overengineering/SKILL.md
+    runtime: claude
+  kind: skill
+  name: anti-overengineering
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/anti-overengineering/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/codegraph-query/SKILL.md
+    runtime: claude
+  kind: skill
+  name: codegraph-query
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/codegraph-query/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/context-packer/SKILL.md
+    runtime: claude
+  kind: skill
+  name: context-packer
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/context-packer/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/dev-cycle/SKILL.md
+    runtime: claude
+  kind: skill
+  name: dev-cycle
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/dev-cycle/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/enhanced-dev-cycle/SKILL.md
+    runtime: claude
+  kind: skill
+  name: enhanced-dev-cycle
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/enhanced-dev-cycle/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/git-workflow/SKILL.md
+    runtime: claude
+  kind: skill
+  name: git-workflow
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/git-workflow/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/loom-kernel/SKILL.md
+    runtime: claude
+  kind: skill
+  name: loom-kernel
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/loom-kernel/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/paseo-advisor/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo-advisor
+  owner: null
+  source: home:.aisw/profiles/personal/skills/paseo-advisor/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/paseo-committee/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo-committee
+  owner: null
+  source: home:.aisw/profiles/personal/skills/paseo-committee/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/paseo-handoff/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo-handoff
+  owner: null
+  source: home:.aisw/profiles/personal/skills/paseo-handoff/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/paseo-loop/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo-loop
+  owner: null
+  source: home:.aisw/profiles/personal/skills/paseo-loop/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/paseo/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo
+  owner: null
+  source: home:.aisw/profiles/personal/skills/paseo/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/plan-builder/SKILL.md
+    runtime: claude
+  kind: skill
+  name: plan-builder
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/plan-builder/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/python-backend/SKILL.md
+    runtime: claude
+  kind: skill
+  name: python-backend
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/python-backend/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/tdd-workflow/SKILL.md
+    runtime: claude
+  kind: skill
+  name: tdd-workflow
+  owner: cuimo
+  source: home:.aisw/profiles/personal/skills/tdd-workflow/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
+    runtime: claude
+  kind: agent
+  name: architecture-reviewer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
+    runtime: claude
+  kind: agent
+  name: ci-cd-platform-engineer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/code-implementer.md
+    runtime: claude
+  kind: agent
+  name: code-implementer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/code-implementer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/data-architecture-engineer.md
+    runtime: claude
+  kind: agent
+  name: data-architecture-engineer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/data-architecture-engineer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
+    runtime: claude
+  kind: agent
+  name: performance-reviewer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
+    runtime: claude
+  kind: agent
+  name: security-reviewer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/security-reviewer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
+    runtime: claude
+  kind: agent
+  name: task-orchestrator
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/task-orchestrator.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/agents/test-writer.md
+    runtime: claude
+  kind: agent
+  name: test-writer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/agents/test-writer.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/anti-overengineering/SKILL.md
+    runtime: claude
+  kind: skill
+  name: anti-overengineering
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/anti-overengineering/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/codegraph-query/SKILL.md
+    runtime: claude
+  kind: skill
+  name: codegraph-query
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/codegraph-query/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/context-packer/SKILL.md
+    runtime: claude
+  kind: skill
+  name: context-packer
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/context-packer/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/dev-cycle/SKILL.md
+    runtime: claude
+  kind: skill
+  name: dev-cycle
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/dev-cycle/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/enhanced-dev-cycle/SKILL.md
+    runtime: claude
+  kind: skill
+  name: enhanced-dev-cycle
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/enhanced-dev-cycle/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/git-workflow/SKILL.md
+    runtime: claude
+  kind: skill
+  name: git-workflow
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/git-workflow/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/loom-kernel/SKILL.md
+    runtime: claude
+  kind: skill
+  name: loom-kernel
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/loom-kernel/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/paseo-advisor/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo-advisor
+  owner: null
+  source: home:.aisw/profiles/trabajo/skills/paseo-advisor/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/paseo-committee/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo-committee
+  owner: null
+  source: home:.aisw/profiles/trabajo/skills/paseo-committee/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/paseo-handoff/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo-handoff
+  owner: null
+  source: home:.aisw/profiles/trabajo/skills/paseo-handoff/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/paseo-loop/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo-loop
+  owner: null
+  source: home:.aisw/profiles/trabajo/skills/paseo-loop/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/paseo/SKILL.md
+    runtime: claude
+  kind: skill
+  name: paseo
+  owner: null
+  source: home:.aisw/profiles/trabajo/skills/paseo/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/plan-builder/SKILL.md
+    runtime: claude
+  kind: skill
+  name: plan-builder
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/plan-builder/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/python-backend/SKILL.md
+    runtime: claude
+  kind: skill
+  name: python-backend
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/python-backend/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/tdd-workflow/SKILL.md
+    runtime: claude
+  kind: skill
+  name: tdd-workflow
+  owner: cuimo
+  source: home:.aisw/profiles/trabajo/skills/tdd-workflow/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/skill-creator/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/skill-creator/SKILL.md
+    runtime: claude
+  kind: skill
+  name: skill-creator
+  owner: null
+  source: home:.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/skill-creator/agents/analyzer.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/skill-creator/agents/analyzer.md
+    runtime: claude
+  kind: agent
+  name: analyzer
+  owner: null
+  source: home:.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator/agents/analyzer.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/skill-creator/agents/comparator.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/skill-creator/agents/comparator.md
+    runtime: claude
+  kind: agent
+  name: comparator
+  owner: null
+  source: home:.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator/agents/comparator.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/skill-creator/agents/grader.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/skill-creator/agents/grader.md
+    runtime: claude
+  kind: agent
+  name: grader
+  owner: null
+  source: home:.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator/agents/grader.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/architecture-reviewer.md
+    runtime: codex
+  kind: agent
+  name: architecture-reviewer
+  owner: cuimo
+  source: home:.codex/agents/architecture-reviewer.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/code-implementer.md
+    runtime: codex
+  kind: agent
+  name: code-implementer
+  owner: cuimo
+  source: home:.codex/agents/code-implementer.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/performance-reviewer.md
+    runtime: codex
+  kind: agent
+  name: performance-reviewer
+  owner: cuimo
+  source: home:.codex/agents/performance-reviewer.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/security-reviewer.md
+    runtime: codex
+  kind: agent
+  name: security-reviewer
+  owner: cuimo
+  source: home:.codex/agents/security-reviewer.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/task-orchestrator.md
+    runtime: codex
+  kind: agent
+  name: task-orchestrator
+  owner: cuimo
+  source: home:.codex/agents/task-orchestrator.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/agents/test-writer.md
+    runtime: codex
+  kind: agent
+  name: test-writer
+  owner: cuimo
+  source: home:.codex/agents/test-writer.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/.system/imagegen/SKILL.md
+    runtime: codex
+  kind: skill
+  name: imagegen
+  owner: null
+  source: home:.codex/skills/.system/imagegen/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/.system/openai-docs/SKILL.md
+    runtime: codex
+  kind: skill
+  name: openai-docs
+  owner: null
+  source: home:.codex/skills/.system/openai-docs/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/.system/plugin-creator/SKILL.md
+    runtime: codex
+  kind: skill
+  name: plugin-creator
+  owner: null
+  source: home:.codex/skills/.system/plugin-creator/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/.system/review-agent/SKILL.md
+    runtime: codex
+  kind: skill
+  name: review-agent
+  owner: null
+  source: home:.codex/skills/.system/review-agent/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/.system/skill-creator/SKILL.md
+    runtime: codex
+  kind: skill
+  name: skill-creator
+  owner: null
+  source: home:.codex/skills/.system/skill-creator/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/.system/skill-installer/SKILL.md
+    runtime: codex
+  kind: skill
+  name: skill-installer
+  owner: null
+  source: home:.codex/skills/.system/skill-installer/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/anti-overengineering/SKILL.md
+    runtime: codex
+  kind: skill
+  name: anti-overengineering
+  owner: cuimo
+  source: home:.codex/skills/anti-overengineering/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/brainstorming/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/brainstorming/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/brainstorming/SKILL.md
+    runtime: codex
+  kind: skill
+  name: brainstorming
+  owner: null
+  source: home:.codex/skills/brainstorming/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/codegraph-query/SKILL.md
+    runtime: codex
+  kind: skill
+  name: codegraph-query
+  owner: cuimo
+  source: home:.codex/skills/codegraph-query/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/context-packer/SKILL.md
+    runtime: codex
+  kind: skill
+  name: context-packer
+  owner: cuimo
+  source: home:.codex/skills/context-packer/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/dev-cycle/SKILL.md
+    runtime: codex
+  kind: skill
+  name: dev-cycle
+  owner: cuimo
+  source: home:.codex/skills/dev-cycle/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/enhanced-dev-cycle/SKILL.md
+    runtime: codex
+  kind: skill
+  name: enhanced-dev-cycle
+  owner: cuimo
+  source: home:.codex/skills/enhanced-dev-cycle/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/executing-plans/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/executing-plans/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/executing-plans/SKILL.md
+    runtime: codex
+  kind: skill
+  name: executing-plans
+  owner: null
+  source: home:.codex/skills/executing-plans/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/git-workflow/SKILL.md
+    runtime: codex
+  kind: skill
+  name: git-workflow
+  owner: cuimo
+  source: home:.codex/skills/git-workflow/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/paseo-advisor/SKILL.md
+    runtime: codex
+  kind: skill
+  name: paseo-advisor
+  owner: null
+  source: home:.codex/skills/paseo-advisor/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/paseo-committee/SKILL.md
+    runtime: codex
+  kind: skill
+  name: paseo-committee
+  owner: null
+  source: home:.codex/skills/paseo-committee/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/paseo-handoff/SKILL.md
+    runtime: codex
+  kind: skill
+  name: paseo-handoff
+  owner: null
+  source: home:.codex/skills/paseo-handoff/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/paseo-loop/SKILL.md
+    runtime: codex
+  kind: skill
+  name: paseo-loop
+  owner: null
+  source: home:.codex/skills/paseo-loop/SKILL.md
+- first_party: false
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/paseo/SKILL.md
+    runtime: codex
+  kind: skill
+  name: paseo
+  owner: null
+  source: home:.codex/skills/paseo/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/plan-builder/SKILL.md
+    runtime: codex
+  kind: skill
+  name: plan-builder
+  owner: cuimo
+  source: home:.codex/skills/plan-builder/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/python-backend/SKILL.md
+    runtime: codex
+  kind: skill
+  name: python-backend
+  owner: cuimo
+  source: home:.codex/skills/python-backend/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/receiving-code-review/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/receiving-code-review/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/receiving-code-review/SKILL.md
+    runtime: codex
+  kind: skill
+  name: receiving-code-review
+  owner: null
+  source: home:.codex/skills/receiving-code-review/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/requesting-code-review/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/requesting-code-review/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/requesting-code-review/SKILL.md
+    runtime: codex
+  kind: skill
+  name: requesting-code-review
+  owner: null
+  source: home:.codex/skills/requesting-code-review/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/systematic-debugging/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/systematic-debugging/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/systematic-debugging/SKILL.md
+    runtime: codex
+  kind: skill
+  name: systematic-debugging
+  owner: null
+  source: home:.codex/skills/systematic-debugging/SKILL.md
+- first_party: true
+  installations:
+  - owner: codex-global
+    path: home:.codex/skills/tdd-workflow/SKILL.md
+    runtime: codex
+  kind: skill
+  name: tdd-workflow
+  owner: cuimo
+  source: home:.codex/skills/tdd-workflow/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/test-driven-development/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/test-driven-development/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/test-driven-development/SKILL.md
+    runtime: codex
+  kind: skill
+  name: test-driven-development
+  owner: null
+  source: home:.codex/skills/test-driven-development/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/verification-before-completion/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/verification-before-completion/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/verification-before-completion/SKILL.md
+    runtime: codex
+  kind: skill
+  name: verification-before-completion
+  owner: null
+  source: home:.codex/skills/verification-before-completion/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/writing-plans/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/writing-plans/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/writing-plans/SKILL.md
+    runtime: codex
+  kind: skill
+  name: writing-plans
+  owner: null
+  source: home:.codex/skills/writing-plans/SKILL.md
+- first_party: false
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/writing-skills/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/writing-skills/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/writing-skills/SKILL.md
+    runtime: codex
+  kind: skill
+  name: writing-skills
+  owner: null
+  source: home:.codex/skills/writing-skills/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-analytics
+    path: home:Documents/CUIMO/github/data-platform-analytics/.agents/skills/data-science-workbench/SKILL.md
+    runtime: shared
+  kind: skill
+  name: data-science-workbench
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-analytics/.agents/skills/data-science-workbench/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-analytics
+    path: home:Documents/CUIMO/github/data-platform-analytics/.claude/agents/data-science-expert.md
+    runtime: claude
+  kind: agent
+  name: data-science-expert
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-analytics/.claude/agents/data-science-expert.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/data-platform-architecture/SKILL.md
+    runtime: shared
+  kind: skill
+  name: data-platform-architecture
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/data-platform-architecture/SKILL.md
+- first_party: false
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo-advisor/SKILL.md
+    runtime: shared
+  kind: skill
+  name: paseo-advisor
+  owner: null
+  source: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo-advisor/SKILL.md
+- first_party: false
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo-committee/SKILL.md
+    runtime: shared
+  kind: skill
+  name: paseo-committee
+  owner: null
+  source: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo-committee/SKILL.md
+- first_party: false
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo-handoff/SKILL.md
+    runtime: shared
+  kind: skill
+  name: paseo-handoff
+  owner: null
+  source: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo-handoff/SKILL.md
+- first_party: false
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo-loop/SKILL.md
+    runtime: shared
+  kind: skill
+  name: paseo-loop
+  owner: null
+  source: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo-loop/SKILL.md
+- first_party: false
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo/SKILL.md
+    runtime: shared
+  kind: skill
+  name: paseo
+  owner: null
+  source: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/paseo/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/release-beta/SKILL.md
+    runtime: shared
+  kind: skill
+  name: release-beta
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/release-beta/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/release-stable/SKILL.md
+    runtime: shared
+  kind: skill
+  name: release-stable
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/release-stable/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/aws-network-architect.md
+    runtime: claude
+  kind: agent
+  name: aws-network-architect
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/aws-network-architect.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/clickhouse-dba.md
+    runtime: claude
+  kind: agent
+  name: clickhouse-dba
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/clickhouse-dba.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/cost-reviewer.md
+    runtime: claude
+  kind: agent
+  name: cost-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/cost-reviewer.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/ecs-fargate-architect.md
+    runtime: claude
+  kind: agent
+  name: ecs-fargate-architect
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/ecs-fargate-architect.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/infra-ci-cd-engineer.md
+    runtime: claude
+  kind: agent
+  name: infra-ci-cd-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/infra-ci-cd-engineer.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/infra-orchestrator.md
+    runtime: claude
+  kind: agent
+  name: infra-orchestrator
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/infra-orchestrator.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/runbook-writer.md
+    runtime: claude
+  kind: agent
+  name: runbook-writer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/runbook-writer.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/security-reviewer.md
+    runtime: claude
+  kind: agent
+  name: security-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/security-reviewer.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/terraform-implementer.md
+    runtime: claude
+  kind: agent
+  name: terraform-implementer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/terraform-implementer.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-aws-foundation/SKILL.md
+    runtime: claude
+  kind: skill
+  name: cuimo-aws-foundation
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-aws-foundation/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-clickhouse-hot/SKILL.md
+    runtime: claude
+  kind: skill
+  name: cuimo-clickhouse-hot
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-clickhouse-hot/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-ecs-fargate/SKILL.md
+    runtime: claude
+  kind: skill
+  name: cuimo-ecs-fargate
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-ecs-fargate/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-prefect-etl/SKILL.md
+    runtime: claude
+  kind: skill
+  name: cuimo-prefect-etl
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-prefect-etl/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-review-checklist/SKILL.md
+    runtime: claude
+  kind: skill
+  name: cuimo-review-checklist
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-review-checklist/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-security-model/SKILL.md
+    runtime: claude
+  kind: skill
+  name: cuimo-security-model
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-security-model/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-arch
+    path: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-terraform-module/SKILL.md
+    runtime: claude
+  kind: skill
+  name: cuimo-terraform-module
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-arch/.claude/skills/cuimo-terraform-module/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-catalog
+    path: home:Documents/CUIMO/github/data-platform-catalog/.agents/skills/data-platform-catalog/SKILL.md
+    runtime: shared
+  kind: skill
+  name: data-platform-catalog
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-catalog/.agents/skills/data-platform-catalog/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-catalog
+    path: home:Documents/CUIMO/github/data-platform-catalog/.claude/agents/catalog-ci-cd-engineer.md
+    runtime: claude
+  kind: agent
+  name: catalog-ci-cd-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-catalog/.claude/agents/catalog-ci-cd-engineer.md
+- first_party: true
+  installations:
+  - owner: data-platform-catalog
+    path: home:Documents/CUIMO/github/data-platform-catalog/.claude/agents/catalog-platform-engineer.md
+    runtime: claude
+  kind: agent
+  name: catalog-platform-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-catalog/.claude/agents/catalog-platform-engineer.md
+- first_party: true
+  installations:
+  - owner: data-platform-catalog
+    path: home:Documents/CUIMO/github/data-platform-catalog/.claude/agents/catalog-python-reviewer.md
+    runtime: claude
+  kind: agent
+  name: catalog-python-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-catalog/.claude/agents/catalog-python-reviewer.md
+- first_party: true
+  installations:
+  - owner: data-platform-ml
+    path: home:Documents/CUIMO/github/data-platform-ml/.claude/agents/ml-lifecycle-orchestrator.md
+    runtime: claude
+  kind: agent
+  name: ml-lifecycle-orchestrator
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-ml/.claude/agents/ml-lifecycle-orchestrator.md
+- first_party: true
+  installations:
+  - owner: data-platform-ml
+    path: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-data-and-validation/SKILL.md
+    runtime: claude
+  kind: skill
+  name: ml-data-and-validation
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-data-and-validation/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-ml
+    path: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-evaluation-and-decision/SKILL.md
+    runtime: claude
+  kind: skill
+  name: ml-evaluation-and-decision
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-evaluation-and-decision/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-ml
+    path: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-experiment/SKILL.md
+    runtime: claude
+  kind: skill
+  name: ml-experiment
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-experiment/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-ml
+    path: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-project-init/SKILL.md
+    runtime: claude
+  kind: skill
+  name: ml-project-init
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-project-init/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-ml
+    path: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-reference-models/SKILL.md
+    runtime: claude
+  kind: skill
+  name: ml-reference-models
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-reference-models/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-ml
+    path: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-release-and-monitoring/SKILL.md
+    runtime: claude
+  kind: skill
+  name: ml-release-and-monitoring
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-ml/.claude/skills/ml-release-and-monitoring/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.agents/agents/etl-platform-engineer.md
+    runtime: shared
+  kind: agent
+  name: etl-platform-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.agents/agents/etl-platform-engineer.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.agents/agents/loom-expert.md
+    runtime: shared
+  kind: agent
+  name: loom-expert
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.agents/agents/loom-expert.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/cross-repo-change/SKILL.md
+    runtime: shared
+  kind: skill
+  name: cross-repo-change
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/cross-repo-change/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/data-contracts/SKILL.md
+    runtime: shared
+  kind: skill
+  name: data-contracts
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/data-contracts/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/etl-runtime-semantics/SKILL.md
+    runtime: shared
+  kind: skill
+  name: etl-runtime-semantics
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/etl-runtime-semantics/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/loom-consumer/SKILL.md
+    runtime: shared
+  kind: skill
+  name: loom-consumer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/loom-consumer/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/mongo-cdc-decomposition/SKILL.md
+    runtime: shared
+  kind: skill
+  name: mongo-cdc-decomposition
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/mongo-cdc-decomposition/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/prefect-operations/SKILL.md
+    runtime: shared
+  kind: skill
+  name: prefect-operations
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.agents/skills/prefect-operations/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-pipelines
+    path: home:Documents/CUIMO/github/data-platform-pipelines/.claude/agents/etl-platform-engineer.md
+    runtime: claude
+  kind: agent
+  name: etl-platform-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-pipelines/.claude/agents/etl-platform-engineer.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.agents/skills/streamlit-data-platform/SKILL.md
+    runtime: shared
+  kind: skill
+  name: streamlit-data-platform
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.agents/skills/streamlit-data-platform/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
+    runtime: claude
+  kind: agent
+  name: streamlit-data-platform-architect
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-architecture-guardian/SKILL.md
+    runtime: claude
+  kind: skill
+  name: streamlit-architecture-guardian
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-architecture-guardian/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-data-ui-engineer/SKILL.md
+    runtime: claude
+  kind: skill
+  name: streamlit-data-ui-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-data-ui-engineer/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-data-visualization-engineer/SKILL.md
+    runtime: claude
+  kind: skill
+  name: streamlit-data-visualization-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-data-visualization-engineer/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-plugin-governor/SKILL.md
+    runtime: claude
+  kind: skill
+  name: streamlit-plugin-governor
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-plugin-governor/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-testing-specialist/SKILL.md
+    runtime: claude
+  kind: skill
+  name: streamlit-testing-specialist
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-testing-specialist/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-ui-engineer/SKILL.md
+    runtime: claude
+  kind: skill
+  name: streamlit-ui-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-ui-engineer/SKILL.md
+- first_party: true
+  installations:
+  - owner: data-platform-web
+    path: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-ux-designer/SKILL.md
+    runtime: claude
+  kind: skill
+  name: streamlit-ux-designer
+  owner: cuimo
+  source: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-ux-designer/SKILL.md
+- first_party: true
+  installations:
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/cuimo-engineering-workflow/SKILL.md
+    runtime: claude
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/cuimo-engineering-workflow/SKILL.md
+    runtime: claude
+  - owner: codex-global
+    path: home:.codex/skills/cuimo-engineering-workflow/SKILL.md
+    runtime: codex
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/skills/cuimo-engineering-workflow/SKILL.md
+    runtime: shared
+  kind: skill
+  name: cuimo-engineering-workflow
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/skills/cuimo-engineering-workflow/SKILL.md

@@ -1,0 +1,187 @@
+[ownership]
+owner = "cuimo"
+sources = [
+  { path = "../skills/cuimo-engineering-workflow/SKILL.md", kind = "skill", name = "cuimo-engineering-workflow" },
+
+  # Global Codex agents owned by CUIMO.
+  { base = "home", path = ".codex/agents/architecture-reviewer.md", kind = "agent", name = "architecture-reviewer" },
+  { base = "home", path = ".codex/agents/code-implementer.md", kind = "agent", name = "code-implementer" },
+  { base = "home", path = ".codex/agents/performance-reviewer.md", kind = "agent", name = "performance-reviewer" },
+  { base = "home", path = ".codex/agents/security-reviewer.md", kind = "agent", name = "security-reviewer" },
+  { base = "home", path = ".codex/agents/task-orchestrator.md", kind = "agent", name = "task-orchestrator" },
+  { base = "home", path = ".codex/agents/test-writer.md", kind = "agent", name = "test-writer" },
+
+  # Global Claude agents owned by CUIMO. Copies are distinct canonical sources.
+  { base = "home", path = ".aisw/profiles/personal/agents/architecture-reviewer.md", kind = "agent", name = "architecture-reviewer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/ci-cd-platform-engineer.md", kind = "agent", name = "ci-cd-platform-engineer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/code-implementer.md", kind = "agent", name = "code-implementer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/data-architecture-engineer.md", kind = "agent", name = "data-architecture-engineer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/performance-reviewer.md", kind = "agent", name = "performance-reviewer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/security-reviewer.md", kind = "agent", name = "security-reviewer" },
+  { base = "home", path = ".aisw/profiles/personal/agents/task-orchestrator.md", kind = "agent", name = "task-orchestrator" },
+  { base = "home", path = ".aisw/profiles/personal/agents/test-writer.md", kind = "agent", name = "test-writer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/architecture-reviewer.md", kind = "agent", name = "architecture-reviewer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/ci-cd-platform-engineer.md", kind = "agent", name = "ci-cd-platform-engineer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/code-implementer.md", kind = "agent", name = "code-implementer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/data-architecture-engineer.md", kind = "agent", name = "data-architecture-engineer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/performance-reviewer.md", kind = "agent", name = "performance-reviewer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/security-reviewer.md", kind = "agent", name = "security-reviewer" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/task-orchestrator.md", kind = "agent", name = "task-orchestrator" },
+  { base = "home", path = ".aisw/profiles/trabajo/agents/test-writer.md", kind = "agent", name = "test-writer" },
+
+  # Global CUIMO skills. Vendor, Paseo, Superpowers, Firecrawl and official skills
+  # remain external because they have no exact declaration here.
+  { base = "home", path = ".codex/skills/anti-overengineering/SKILL.md", kind = "skill", name = "anti-overengineering" },
+  { base = "home", path = ".codex/skills/codegraph-query/SKILL.md", kind = "skill", name = "codegraph-query" },
+  { base = "home", path = ".codex/skills/context-packer/SKILL.md", kind = "skill", name = "context-packer" },
+  { base = "home", path = ".codex/skills/dev-cycle/SKILL.md", kind = "skill", name = "dev-cycle" },
+  { base = "home", path = ".codex/skills/enhanced-dev-cycle/SKILL.md", kind = "skill", name = "enhanced-dev-cycle" },
+  { base = "home", path = ".codex/skills/git-workflow/SKILL.md", kind = "skill", name = "git-workflow" },
+  { base = "home", path = ".codex/skills/plan-builder/SKILL.md", kind = "skill", name = "plan-builder" },
+  { base = "home", path = ".codex/skills/python-backend/SKILL.md", kind = "skill", name = "python-backend" },
+  { base = "home", path = ".codex/skills/tdd-workflow/SKILL.md", kind = "skill", name = "tdd-workflow" },
+  { base = "home", path = ".aisw/profiles/personal/skills/anti-overengineering/SKILL.md", kind = "skill", name = "anti-overengineering" },
+  { base = "home", path = ".aisw/profiles/personal/skills/codegraph-query/SKILL.md", kind = "skill", name = "codegraph-query" },
+  { base = "home", path = ".aisw/profiles/personal/skills/context-packer/SKILL.md", kind = "skill", name = "context-packer" },
+  { base = "home", path = ".aisw/profiles/personal/skills/dev-cycle/SKILL.md", kind = "skill", name = "dev-cycle" },
+  { base = "home", path = ".aisw/profiles/personal/skills/enhanced-dev-cycle/SKILL.md", kind = "skill", name = "enhanced-dev-cycle" },
+  { base = "home", path = ".aisw/profiles/personal/skills/git-workflow/SKILL.md", kind = "skill", name = "git-workflow" },
+  { base = "home", path = ".aisw/profiles/personal/skills/loom-kernel/SKILL.md", kind = "skill", name = "loom-kernel" },
+  { base = "home", path = ".aisw/profiles/personal/skills/plan-builder/SKILL.md", kind = "skill", name = "plan-builder" },
+  { base = "home", path = ".aisw/profiles/personal/skills/python-backend/SKILL.md", kind = "skill", name = "python-backend" },
+  { base = "home", path = ".aisw/profiles/personal/skills/tdd-workflow/SKILL.md", kind = "skill", name = "tdd-workflow" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/anti-overengineering/SKILL.md", kind = "skill", name = "anti-overengineering" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/codegraph-query/SKILL.md", kind = "skill", name = "codegraph-query" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/context-packer/SKILL.md", kind = "skill", name = "context-packer" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/dev-cycle/SKILL.md", kind = "skill", name = "dev-cycle" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/enhanced-dev-cycle/SKILL.md", kind = "skill", name = "enhanced-dev-cycle" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/git-workflow/SKILL.md", kind = "skill", name = "git-workflow" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/loom-kernel/SKILL.md", kind = "skill", name = "loom-kernel" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/plan-builder/SKILL.md", kind = "skill", name = "plan-builder" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/python-backend/SKILL.md", kind = "skill", name = "python-backend" },
+  { base = "home", path = ".aisw/profiles/trabajo/skills/tdd-workflow/SKILL.md", kind = "skill", name = "tdd-workflow" },
+
+  { path = "../../github/data-platform-analytics/.agents/skills/data-science-workbench/SKILL.md", kind = "skill", name = "data-science-workbench" },
+  { path = "../../github/data-platform-analytics/.claude/agents/data-science-expert.md", kind = "agent", name = "data-science-expert" },
+
+  { path = "../../github/data-platform-arch/.agents/skills/data-platform-architecture/SKILL.md", kind = "skill", name = "data-platform-architecture" },
+  { path = "../../github/data-platform-arch/.agents/skills/release-beta/SKILL.md", kind = "skill", name = "release-beta" },
+  { path = "../../github/data-platform-arch/.agents/skills/release-stable/SKILL.md", kind = "skill", name = "release-stable" },
+  { path = "../../github/data-platform-arch/.claude/agents/aws-network-architect.md", kind = "agent", name = "aws-network-architect" },
+  { path = "../../github/data-platform-arch/.claude/agents/clickhouse-dba.md", kind = "agent", name = "clickhouse-dba" },
+  { path = "../../github/data-platform-arch/.claude/agents/cost-reviewer.md", kind = "agent", name = "cost-reviewer" },
+  { path = "../../github/data-platform-arch/.claude/agents/ecs-fargate-architect.md", kind = "agent", name = "ecs-fargate-architect" },
+  { path = "../../github/data-platform-arch/.claude/agents/infra-ci-cd-engineer.md", kind = "agent", name = "infra-ci-cd-engineer" },
+  { path = "../../github/data-platform-arch/.claude/agents/infra-orchestrator.md", kind = "agent", name = "infra-orchestrator" },
+  { path = "../../github/data-platform-arch/.claude/agents/runbook-writer.md", kind = "agent", name = "runbook-writer" },
+  { path = "../../github/data-platform-arch/.claude/agents/security-reviewer.md", kind = "agent", name = "security-reviewer" },
+  { path = "../../github/data-platform-arch/.claude/agents/terraform-implementer.md", kind = "agent", name = "terraform-implementer" },
+  { path = "../../github/data-platform-arch/.claude/skills/cuimo-aws-foundation/SKILL.md", kind = "skill", name = "cuimo-aws-foundation" },
+  { path = "../../github/data-platform-arch/.claude/skills/cuimo-clickhouse-hot/SKILL.md", kind = "skill", name = "cuimo-clickhouse-hot" },
+  { path = "../../github/data-platform-arch/.claude/skills/cuimo-ecs-fargate/SKILL.md", kind = "skill", name = "cuimo-ecs-fargate" },
+  { path = "../../github/data-platform-arch/.claude/skills/cuimo-prefect-etl/SKILL.md", kind = "skill", name = "cuimo-prefect-etl" },
+  { path = "../../github/data-platform-arch/.claude/skills/cuimo-review-checklist/SKILL.md", kind = "skill", name = "cuimo-review-checklist" },
+  { path = "../../github/data-platform-arch/.claude/skills/cuimo-security-model/SKILL.md", kind = "skill", name = "cuimo-security-model" },
+  { path = "../../github/data-platform-arch/.claude/skills/cuimo-terraform-module/SKILL.md", kind = "skill", name = "cuimo-terraform-module" },
+
+  { path = "../../github/data-platform-catalog/.agents/skills/data-platform-catalog/SKILL.md", kind = "skill", name = "data-platform-catalog" },
+  { path = "../../github/data-platform-catalog/.claude/agents/catalog-ci-cd-engineer.md", kind = "agent", name = "catalog-ci-cd-engineer" },
+  { path = "../../github/data-platform-catalog/.claude/agents/catalog-platform-engineer.md", kind = "agent", name = "catalog-platform-engineer" },
+  { path = "../../github/data-platform-catalog/.claude/agents/catalog-python-reviewer.md", kind = "agent", name = "catalog-python-reviewer" },
+
+  { path = "../../github/data-platform-ml/.claude/agents/ml-lifecycle-orchestrator.md", kind = "agent", name = "ml-lifecycle-orchestrator" },
+  { path = "../../github/data-platform-ml/.claude/skills/ml-data-and-validation/SKILL.md", kind = "skill", name = "ml-data-and-validation" },
+  { path = "../../github/data-platform-ml/.claude/skills/ml-evaluation-and-decision/SKILL.md", kind = "skill", name = "ml-evaluation-and-decision" },
+  { path = "../../github/data-platform-ml/.claude/skills/ml-experiment/SKILL.md", kind = "skill", name = "ml-experiment" },
+  { path = "../../github/data-platform-ml/.claude/skills/ml-project-init/SKILL.md", kind = "skill", name = "ml-project-init" },
+  { path = "../../github/data-platform-ml/.claude/skills/ml-reference-models/SKILL.md", kind = "skill", name = "ml-reference-models" },
+  { path = "../../github/data-platform-ml/.claude/skills/ml-release-and-monitoring/SKILL.md", kind = "skill", name = "ml-release-and-monitoring" },
+
+  { path = "../../github/data-platform-pipelines/.agents/agents/etl-platform-engineer.md", kind = "agent", name = "etl-platform-engineer" },
+  { path = "../../github/data-platform-pipelines/.agents/agents/loom-expert.md", kind = "agent", name = "loom-expert" },
+  { path = "../../github/data-platform-pipelines/.agents/skills/cross-repo-change/SKILL.md", kind = "skill", name = "cross-repo-change" },
+  { path = "../../github/data-platform-pipelines/.agents/skills/data-contracts/SKILL.md", kind = "skill", name = "data-contracts" },
+  { path = "../../github/data-platform-pipelines/.agents/skills/etl-runtime-semantics/SKILL.md", kind = "skill", name = "etl-runtime-semantics" },
+  { path = "../../github/data-platform-pipelines/.agents/skills/loom-consumer/SKILL.md", kind = "skill", name = "loom-consumer" },
+  { path = "../../github/data-platform-pipelines/.agents/skills/mongo-cdc-decomposition/SKILL.md", kind = "skill", name = "mongo-cdc-decomposition" },
+  { path = "../../github/data-platform-pipelines/.agents/skills/prefect-operations/SKILL.md", kind = "skill", name = "prefect-operations" },
+  { path = "../../github/data-platform-pipelines/.claude/agents/etl-platform-engineer.md", kind = "agent", name = "etl-platform-engineer" },
+
+  { path = "../../github/data-platform-web/.agents/skills/streamlit-data-platform/SKILL.md", kind = "skill", name = "streamlit-data-platform" },
+  { path = "../../github/data-platform-web/.claude/agents/streamlit-data-platform-architect.md", kind = "agent", name = "streamlit-data-platform-architect" },
+  { path = "../../github/data-platform-web/.claude/skills/streamlit-architecture-guardian/SKILL.md", kind = "skill", name = "streamlit-architecture-guardian" },
+  { path = "../../github/data-platform-web/.claude/skills/streamlit-data-ui-engineer/SKILL.md", kind = "skill", name = "streamlit-data-ui-engineer" },
+  { path = "../../github/data-platform-web/.claude/skills/streamlit-data-visualization-engineer/SKILL.md", kind = "skill", name = "streamlit-data-visualization-engineer" },
+  { path = "../../github/data-platform-web/.claude/skills/streamlit-plugin-governor/SKILL.md", kind = "skill", name = "streamlit-plugin-governor" },
+  { path = "../../github/data-platform-web/.claude/skills/streamlit-testing-specialist/SKILL.md", kind = "skill", name = "streamlit-testing-specialist" },
+  { path = "../../github/data-platform-web/.claude/skills/streamlit-ui-engineer/SKILL.md", kind = "skill", name = "streamlit-ui-engineer" },
+  { path = "../../github/data-platform-web/.claude/skills/streamlit-ux-designer/SKILL.md", kind = "skill", name = "streamlit-ux-designer" },
+]
+
+[[roots]]
+path = ".."
+owner = "metodologia"
+
+[[roots]]
+base = "home"
+path = ".codex/agents"
+owner = "codex-global"
+runtime = "codex"
+
+[[roots]]
+base = "home"
+path = ".codex/skills"
+owner = "codex-global"
+runtime = "codex"
+
+[[roots]]
+base = "home"
+path = ".aisw/profiles/personal/agents"
+owner = "claude-personal"
+runtime = "claude"
+
+[[roots]]
+base = "home"
+path = ".aisw/profiles/personal/skills"
+owner = "claude-personal"
+runtime = "claude"
+
+[[roots]]
+base = "home"
+path = ".aisw/profiles/trabajo/agents"
+owner = "claude-trabajo"
+runtime = "claude"
+
+[[roots]]
+base = "home"
+path = ".aisw/profiles/trabajo/skills"
+owner = "claude-trabajo"
+runtime = "claude"
+
+[[roots]]
+path = "../../github/data-platform-analytics"
+owner = "data-platform-analytics"
+
+[[roots]]
+path = "../../github/data-platform-arch"
+owner = "data-platform-arch"
+
+[[roots]]
+path = "../../github/data-platform-catalog"
+owner = "data-platform-catalog"
+
+[[roots]]
+path = "../../github/data-platform-ml"
+owner = "data-platform-ml"
+
+[[roots]]
+path = "../../github/data-platform-mongo-cdc-daemon"
+owner = "data-platform-mongo-cdc-daemon"
+
+[[roots]]
+path = "../../github/data-platform-pipelines"
+owner = "data-platform-pipelines"
+
+[[roots]]
+path = "../../github/data-platform-web"
+owner = "data-platform-web"
