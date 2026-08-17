@@ -1624,6 +1624,132 @@ artifacts:
   source: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-ux-designer/SKILL.md
 - first_party: true
   installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/claude/architecture-reviewer.md
+    runtime: claude
+  kind: agent
+  name: architecture-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/claude/architecture-reviewer.md
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/claude/implementer.md
+    runtime: claude
+  kind: agent
+  name: implementer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/claude/implementer.md
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/claude/lead-engineer.md
+    runtime: claude
+  kind: agent
+  name: lead-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/claude/lead-engineer.md
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/claude/proposal-critic.md
+    runtime: claude
+  kind: agent
+  name: proposal-critic
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/claude/proposal-critic.md
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/claude/security-reviewer.md
+    runtime: claude
+  kind: agent
+  name: security-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/claude/security-reviewer.md
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/claude/simplicity-reviewer.md
+    runtime: claude
+  kind: agent
+  name: simplicity-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/claude/simplicity-reviewer.md
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/claude/verifier.md
+    runtime: claude
+  kind: agent
+  name: verifier
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/claude/verifier.md
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/codex/architecture-reviewer.toml
+    runtime: codex
+  kind: agent
+  name: architecture-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/codex/architecture-reviewer.toml
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/codex/implementer.toml
+    runtime: codex
+  kind: agent
+  name: implementer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/codex/implementer.toml
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/codex/lead-engineer.toml
+    runtime: codex
+  kind: agent
+  name: lead-engineer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/codex/lead-engineer.toml
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/codex/proposal-critic.toml
+    runtime: codex
+  kind: agent
+  name: proposal-critic
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/codex/proposal-critic.toml
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/codex/security-reviewer.toml
+    runtime: codex
+  kind: agent
+  name: security-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/codex/security-reviewer.toml
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/codex/simplicity-reviewer.toml
+    runtime: codex
+  kind: agent
+  name: simplicity-reviewer
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/codex/simplicity-reviewer.toml
+- first_party: true
+  installations:
+  - owner: metodologia
+    path: home:Documents/CUIMO/metodologia/agents/codex/verifier.toml
+    runtime: codex
+  kind: agent
+  name: verifier
+  owner: cuimo
+  source: home:Documents/CUIMO/metodologia/agents/codex/verifier.toml
+- first_party: true
+  installations:
   - owner: claude-personal
     path: home:.aisw/profiles/personal/skills/cuimo-engineering-workflow/SKILL.md
     runtime: claude

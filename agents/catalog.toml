@@ -3,6 +3,22 @@ owner = "cuimo"
 sources = [
   { path = "../skills/cuimo-engineering-workflow/SKILL.md", kind = "skill", name = "cuimo-engineering-workflow" },
 
+  # Canonical native core agents. These sources are installed into each CLI profile.
+  { path = "claude/lead-engineer.md", kind = "agent", name = "lead-engineer" },
+  { path = "claude/proposal-critic.md", kind = "agent", name = "proposal-critic" },
+  { path = "claude/implementer.md", kind = "agent", name = "implementer" },
+  { path = "claude/verifier.md", kind = "agent", name = "verifier" },
+  { path = "claude/architecture-reviewer.md", kind = "agent", name = "architecture-reviewer" },
+  { path = "claude/security-reviewer.md", kind = "agent", name = "security-reviewer" },
+  { path = "claude/simplicity-reviewer.md", kind = "agent", name = "simplicity-reviewer" },
+  { path = "codex/lead-engineer.toml", kind = "agent", name = "lead-engineer" },
+  { path = "codex/proposal-critic.toml", kind = "agent", name = "proposal-critic" },
+  { path = "codex/implementer.toml", kind = "agent", name = "implementer" },
+  { path = "codex/verifier.toml", kind = "agent", name = "verifier" },
+  { path = "codex/architecture-reviewer.toml", kind = "agent", name = "architecture-reviewer" },
+  { path = "codex/security-reviewer.toml", kind = "agent", name = "security-reviewer" },
+  { path = "codex/simplicity-reviewer.toml", kind = "agent", name = "simplicity-reviewer" },
+
   # Global Codex agents owned by CUIMO.
   { base = "home", path = ".codex/agents/architecture-reviewer.md", kind = "agent", name = "architecture-reviewer" },
   { base = "home", path = ".codex/agents/code-implementer.md", kind = "agent", name = "code-implementer" },

@@ -1132,6 +1132,33 @@ findings:
   message: 'Unexpected key(s) in SKILL.md frontmatter: user-invocable. Allowed properties
     are: allowed-tools, description, license, metadata, name'
   path: home:Documents/CUIMO/github/data-platform-arch/.agents/skills/release-stable/SKILL.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:.aisw/profiles/personal/agents/architecture-reviewer.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:.aisw/profiles/personal/agents/performance-reviewer.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:.aisw/profiles/personal/agents/security-reviewer.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:.aisw/profiles/trabajo/agents/architecture-reviewer.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:.aisw/profiles/trabajo/agents/performance-reviewer.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:.aisw/profiles/trabajo/agents/security-reviewer.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/cost-reviewer.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:Documents/CUIMO/github/data-platform-arch/.claude/agents/security-reviewer.md
+- code: read-only-agent-has-write-tool
+  message: 'read-only agent grants write-capable tools: Bash'
+  path: home:Documents/CUIMO/github/data-platform-catalog/.claude/agents/catalog-python-reviewer.md
 - code: skill-description-missing-discovery-trigger
   message: skill description must start exactly with "Use when"
   path: home:.aisw/profiles/personal/skills/dev-cycle/SKILL.md
@@ -1235,5 +1262,5 @@ findings:
   message: skill description must start exactly with "Use when"
   path: home:Documents/CUIMO/metodologia/skills/cuimo-engineering-workflow/SKILL.md
 summary:
-  artifacts: 102
-  findings: 405
+  artifacts: 116
+  findings: 414

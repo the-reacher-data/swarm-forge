@@ -83,6 +83,19 @@ def test_read_only_claude_reviewer_rejects_write_tool(tmp_path: Path) -> None:
     ]
 
 
+def test_read_only_claude_reviewer_rejects_shell_tool(tmp_path: Path) -> None:
+    path = tmp_path / "verifier.md"
+    _valid_claude_agent(
+        path,
+        name="verifier",
+        tools='["Read", "Grep", "Glob", "Bash"]',
+    )
+
+    assert [finding.code for finding in validate_claude_agent(path)] == [
+        "read-only-agent-has-write-tool"
+    ]
+
+
 def test_valid_claude_reviewer_passes(tmp_path: Path) -> None:
     path = tmp_path / "security-reviewer.md"
     _valid_claude_agent(
