@@ -1,7 +1,7 @@
 [ownership]
 owner = "cuimo"
 sources = [
-  { path = "../skills/cuimo-engineering-workflow/SKILL.md", kind = "skill", name = "cuimo-engineering-workflow" },
+  { path = "../skills/dev-loop/SKILL.md", kind = "skill", name = "dev-loop" },
 
   # Canonical native core agents. These sources are installed into each CLI profile.
   { path = "claude/lead-engineer.md", kind = "agent", name = "lead-engineer" },

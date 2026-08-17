@@ -1,0 +1,23 @@
+applied: true
+skill: dev-loop
+source: home:Documents/CUIMO/metodologia/skills/dev-loop
+targets:
+  - owner: codex-global
+    path: home:.codex/skills/dev-loop
+    status: linked
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/dev-loop
+    status: linked
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/dev-loop
+    status: linked
+retired:
+  - owner: codex-global
+    path: home:.codex/skills/cuimo-engineering-workflow
+    backup: home:.cuimo/skill-backups/20260817-dev-loop-rename/codex/cuimo-engineering-workflow
+  - owner: claude-personal
+    path: home:.aisw/profiles/personal/skills/cuimo-engineering-workflow
+    backup: home:.cuimo/skill-backups/20260817-dev-loop-rename/claude-personal/cuimo-engineering-workflow
+  - owner: claude-trabajo
+    path: home:.aisw/profiles/trabajo/skills/cuimo-engineering-workflow
+    backup: home:.cuimo/skill-backups/20260817-dev-loop-rename/claude-trabajo/cuimo-engineering-workflow

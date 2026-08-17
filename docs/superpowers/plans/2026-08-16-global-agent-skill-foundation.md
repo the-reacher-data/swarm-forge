@@ -344,8 +344,8 @@ Commit:
 
 **Files:**
 
-- Modify: skills/cuimo-engineering-workflow/SKILL.md
-- Modify: skills/cuimo-engineering-workflow/references/roles-and-contracts.md
+- Modify: skills/dev-loop/SKILL.md
+- Modify: skills/dev-loop/references/roles-and-contracts.md
 - Modify: agent_architecture_skills_blueprint.md
 - Create: agents/README.md
 - Create: test/python/test_global_agent_contracts.py
@@ -365,7 +365,7 @@ Commit:
         assert claude_agent_names(Path("agents/claude")) == expected
         assert codex_agent_names(Path("agents/codex")) == expected
         assert workflow_role_names(
-            Path("skills/cuimo-engineering-workflow/references/roles-and-contracts.md")
+            Path("skills/dev-loop/references/roles-and-contracts.md")
         ) == expected
 
 - [ ] **Step 2: Verify current naming drift is detected**
@@ -377,7 +377,7 @@ agent-versus-skill routing. Keep SwarmForge explicitly out of scope.
 
 - [ ] **Step 4: Validate and commit**
 
-Run quick_validate.py for cuimo-engineering-workflow and the contract test.
+Run quick_validate.py for dev-loop and the contract test.
 Commit:
 
     docs(agents): align workflow contracts and routing

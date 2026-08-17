@@ -1126,9 +1126,6 @@ findings:
 - code: skill-description-missing-discovery-trigger
   message: skill description must start exactly with "Use when"
   path: home:Documents/CUIMO/github/data-platform-web/.claude/skills/streamlit-ux-designer/SKILL.md
-- code: skill-description-missing-discovery-trigger
-  message: skill description must start exactly with "Use when"
-  path: home:Documents/CUIMO/metodologia/skills/cuimo-engineering-workflow/SKILL.md
 summary:
   artifacts: 133
-  findings: 370
+  findings: 369

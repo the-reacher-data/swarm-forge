@@ -1904,18 +1904,18 @@ artifacts:
 - first_party: true
   installations:
   - owner: claude-personal
-    path: home:.aisw/profiles/personal/skills/cuimo-engineering-workflow/SKILL.md
+    path: home:.aisw/profiles/personal/skills/dev-loop/SKILL.md
     runtime: claude
   - owner: claude-trabajo
-    path: home:.aisw/profiles/trabajo/skills/cuimo-engineering-workflow/SKILL.md
+    path: home:.aisw/profiles/trabajo/skills/dev-loop/SKILL.md
     runtime: claude
   - owner: codex-global
-    path: home:.codex/skills/cuimo-engineering-workflow/SKILL.md
+    path: home:.codex/skills/dev-loop/SKILL.md
     runtime: codex
   - owner: metodologia
-    path: home:Documents/CUIMO/metodologia/skills/cuimo-engineering-workflow/SKILL.md
+    path: home:Documents/CUIMO/metodologia/skills/dev-loop/SKILL.md
     runtime: shared
   kind: skill
-  name: cuimo-engineering-workflow
+  name: dev-loop
   owner: cuimo
-  source: home:Documents/CUIMO/metodologia/skills/cuimo-engineering-workflow/SKILL.md
+  source: home:Documents/CUIMO/metodologia/skills/dev-loop/SKILL.md

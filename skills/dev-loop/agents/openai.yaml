@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dev Loop"
+  short_description: "Orquesta desarrollo con crítica y verificación"
+  default_prompt: "Use $dev-loop to turn this request into a reviewed, verified implementation."

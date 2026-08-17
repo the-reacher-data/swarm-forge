@@ -199,7 +199,7 @@ the contract, the artifact is retained and the passing evidence is recorded.
 
 ## Orchestration loop
 
-`cuimo-engineering-workflow` orchestrates engineering work after installation.
+`dev-loop` orchestrates engineering work after installation.
 The improvement project itself uses a worker/verifier loop:
 
 1. Build the inventory and classify one coherent artifact group.
