@@ -1,0 +1,32 @@
+version: 1
+cases:
+  - id: skill-baseline-gap
+    target: candidate-skill
+    kind: baseline
+    prompt: Run a representative task without the candidate skill and record the reusable failure or gap.
+    expected: observe-gap
+    forbidden: []
+  - id: skill-discovery-trigger
+    target: candidate-skill
+    kind: discovery
+    prompt: Present a representative request that should cause the runtime to discover the candidate skill.
+    expected: discover
+    forbidden: []
+  - id: skill-application-contract
+    target: candidate-skill
+    kind: application
+    prompt: Apply the skill to a representative task and check the required decision or artifact.
+    expected: apply
+    forbidden: []
+  - id: skill-variation-edge
+    target: candidate-skill
+    kind: variation
+    prompt: Apply the skill to a materially different valid example without leaking the expected answer.
+    expected: adapt
+    forbidden: []
+  - id: skill-negative-routing
+    target: candidate-skill
+    kind: negative
+    prompt: Present a nearby request outside the skill boundary and confirm that it is not selected.
+    expected: do-not-invoke
+    forbidden: []

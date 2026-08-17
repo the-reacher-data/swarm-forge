@@ -1,0 +1,44 @@
+version: 1
+mappings:
+  - role: lead-engineer
+    claude: lead-engineer.md
+    codex: lead-engineer.toml
+    read_only: false
+    responsibilities: [requirements, proposal, route specialists, final acceptance]
+    required_output_fields: [problem, acceptance_criteria, verification]
+  - role: proposal-critic
+    claude: proposal-critic.md
+    codex: proposal-critic.toml
+    read_only: true
+    responsibilities: [challenge assumptions, missing decisions, simpler alternative]
+    required_output_fields: [verdict, findings, assumptions_challenged, missing_decisions, simpler_alternative]
+  - role: implementer
+    claude: implementer.md
+    codex: implementer.toml
+    read_only: false
+    responsibilities: [bounded task, smallest compatible change, appropriate tests]
+    required_output_fields: [changed_behavior, checks, residual_risks]
+  - role: verifier
+    claude: verifier.md
+    codex: verifier.toml
+    read_only: true
+    responsibilities: [acceptance criteria, deterministic evidence, independent verification]
+    required_output_fields: [verdict, acceptance_criteria, checks, findings, unverified]
+  - role: architecture-reviewer
+    claude: architecture-reviewer.md
+    codex: architecture-reviewer.toml
+    read_only: true
+    responsibilities: [dependency direction, state ownership, compatibility]
+    required_output_fields: [severity, confidence, location, evidence, impact, recommendation]
+  - role: security-reviewer
+    claude: security-reviewer.md
+    codex: security-reviewer.toml
+    read_only: true
+    responsibilities: [authorization, tenant isolation, abuse paths]
+    required_output_fields: [severity, confidence, location, evidence, impact, recommendation]
+  - role: simplicity-reviewer
+    claude: simplicity-reviewer.md
+    codex: simplicity-reviewer.toml
+    read_only: true
+    responsibilities: [unnecessary concepts, speculative extensibility, blast radius]
+    required_output_fields: [severity, confidence, location, evidence, impact, recommendation]

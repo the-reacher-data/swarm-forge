@@ -1,0 +1,176 @@
+version: 1
+cases:
+  - id: lead-ambiguous-requirements
+    target: lead-engineer
+    kind: trigger
+    prompt: Clarify the unclear requirements, constraints, and acceptance criteria before proposing a solution.
+    expected: invoke
+    forbidden: ["You implement the approved task"]
+  - id: lead-cross-cutting-proposal
+    target: lead-engineer
+    kind: trigger
+    prompt: Own a cross-repository proposal, route the necessary specialists, and decide whether the result is acceptable.
+    expected: invoke
+    forbidden: ["You independently verify the implementation"]
+  - id: lead-bounded-implementation
+    target: lead-engineer
+    kind: trigger
+    prompt: Implement this already approved and fully bounded one-file change.
+    expected: do-not-invoke
+    forbidden: []
+  - id: lead-security-only-review
+    target: lead-engineer
+    kind: trigger
+    prompt: Perform a read-only review of authorization and secret handling in this finished change.
+    expected: do-not-invoke
+    forbidden: []
+
+  - id: critic-challenge-assumptions
+    target: proposal-critic
+    kind: trigger
+    prompt: Independently challenge the proposal's assumptions, missing decisions, and unverifiable acceptance criteria.
+    expected: invoke
+    forbidden: ["Implement the proposed solution"]
+  - id: critic-find-simpler-proposal
+    target: proposal-critic
+    kind: trigger
+    prompt: Before coding, determine whether a materially simpler proposal meets the same outcome.
+    expected: invoke
+    forbidden: ["Edit production code"]
+  - id: critic-verify-completed-code
+    target: proposal-critic
+    kind: trigger
+    prompt: Run the checks and verify whether the completed implementation satisfies its acceptance criteria.
+    expected: do-not-invoke
+    forbidden: []
+  - id: critic-architecture-review
+    target: proposal-critic
+    kind: trigger
+    prompt: Review the dependency direction and state ownership of an already implemented change.
+    expected: do-not-invoke
+    forbidden: []
+
+  - id: implementer-approved-task
+    target: implementer
+    kind: trigger
+    prompt: Implement this approved bounded task with the smallest compatible change and appropriate tests.
+    expected: invoke
+    forbidden: ["Make the final acceptance decision"]
+  - id: implementer-focused-correction
+    target: implementer
+    kind: trigger
+    prompt: Correct this verified failure without expanding the approved scope.
+    expected: invoke
+    forbidden: ["Independently certify your own completion"]
+  - id: implementer-ambiguous-request
+    target: implementer
+    kind: trigger
+    prompt: Decide what the ambiguous feature should mean and choose its product behavior.
+    expected: do-not-invoke
+    forbidden: []
+  - id: implementer-independent-verification
+    target: implementer
+    kind: trigger
+    prompt: Independently verify another agent's finished implementation without editing it.
+    expected: do-not-invoke
+    forbidden: []
+
+  - id: verifier-acceptance-evidence
+    target: verifier
+    kind: trigger
+    prompt: Validate every acceptance criterion against fresh deterministic evidence without trusting the implementer.
+    expected: invoke
+    forbidden: ["Modify production code"]
+  - id: verifier-reproduce-failure
+    target: verifier
+    kind: trigger
+    prompt: Reproduce the reported behavior, run the required checks, and identify anything still unverified.
+    expected: invoke
+    forbidden: ["Repair the implementation"]
+  - id: verifier-write-fix
+    target: verifier
+    kind: trigger
+    prompt: Fix the failing implementation and refactor the affected production module.
+    expected: do-not-invoke
+    forbidden: []
+  - id: verifier-proposal-critique
+    target: verifier
+    kind: trigger
+    prompt: Challenge an unapproved proposal before any implementation begins.
+    expected: do-not-invoke
+    forbidden: []
+
+  - id: architecture-boundaries
+    target: architecture-reviewer
+    kind: trigger
+    prompt: Review module boundaries, dependency direction, public contracts, and state ownership.
+    expected: invoke
+    forbidden: ["Implement the architectural refactor"]
+  - id: architecture-compatibility
+    target: architecture-reviewer
+    kind: trigger
+    prompt: Assess concurrency, compatibility, and transaction boundaries in this cross-cutting change.
+    expected: invoke
+    forbidden: ["Silently redesign the approved scope"]
+  - id: architecture-secret-review
+    target: architecture-reviewer
+    kind: trigger
+    prompt: Audit credential leakage, authorization bypass, and tenant isolation only.
+    expected: do-not-invoke
+    forbidden: []
+  - id: architecture-overengineering-only
+    target: architecture-reviewer
+    kind: trigger
+    prompt: Look only for unnecessary abstractions and speculative extensibility in a local refactor.
+    expected: do-not-invoke
+    forbidden: []
+
+  - id: security-authorization
+    target: security-reviewer
+    kind: trigger
+    prompt: Review authentication, authorization, tenant isolation, and abuse paths in this change.
+    expected: invoke
+    forbidden: ["Implement the security fixes"]
+  - id: security-secrets-input
+    target: security-reviewer
+    kind: trigger
+    prompt: Audit secret handling, untrusted input, integrity, and security failure modes.
+    expected: invoke
+    forbidden: ["Change the approved threat model"]
+  - id: security-general-architecture
+    target: security-reviewer
+    kind: trigger
+    prompt: Review dependency direction and compatibility where no security boundary is involved.
+    expected: do-not-invoke
+    forbidden: []
+  - id: security-simplify-code
+    target: security-reviewer
+    kind: trigger
+    prompt: Find avoidable abstractions and reduce indirection in trusted internal code.
+    expected: do-not-invoke
+    forbidden: []
+
+  - id: simplicity-unnecessary-abstractions
+    target: simplicity-reviewer
+    kind: trigger
+    prompt: Find unnecessary concepts, abstractions, and indirection introduced by this large diff.
+    expected: invoke
+    forbidden: ["Rewrite the implementation"]
+  - id: simplicity-blast-radius
+    target: simplicity-reviewer
+    kind: trigger
+    prompt: Identify speculative extensibility and a smaller design with less blast radius.
+    expected: invoke
+    forbidden: ["Expand the requested scope"]
+  - id: simplicity-security-audit
+    target: simplicity-reviewer
+    kind: trigger
+    prompt: Audit authorization, secret exposure, and cross-tenant access controls.
+    expected: do-not-invoke
+    forbidden: []
+  - id: simplicity-acceptance-verification
+    target: simplicity-reviewer
+    kind: trigger
+    prompt: Run the acceptance checks and certify whether the implementation works.
+    expected: do-not-invoke
+    forbidden: []
