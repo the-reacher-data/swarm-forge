@@ -36,6 +36,9 @@ DEFAULT_MAX_OUTPUT_BYTES = 8_192
 DEFAULT_TIMEOUT_SECONDS = 180
 DEFAULT_AFFECTED_TIMEOUT_SECONDS = 30
 CACHED_MODES = {"stop", "pre-handoff", "pre-complete"}
+#: Placeholder a configured command uses to run only the affected tests.
+AFFECTED_TESTS = "{affected_tests}"
+UPSTREAM_REFS = ("origin/HEAD", "origin/main", "origin/master")
 
 
 def git_root(cwd: Path) -> Path:
@@ -69,6 +72,39 @@ def changed_python_files(root: Path) -> list[str]:
     return sorted(
         path for path in changed if path.endswith(".py") and (root / path).is_file()
     )
+
+
+def branch_python_files(root: Path) -> list[str]:
+    """Python files the branch changes against its upstream, plus the working tree.
+
+    Right after a commit the working tree is clean, yet the branch still differs
+    from main: those are the changes a stop gate has to test.
+    """
+    changed = set(changed_python_files(root))
+    for ref in UPSTREAM_REFS:
+        base = subprocess.run(
+            ["git", "merge-base", "HEAD", ref],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if base.returncode == 0 and base.stdout.strip():
+            diff = subprocess.run(
+                ["git", "diff", "--name-only", "--diff-filter=ACMR", base.stdout.strip(), "HEAD", "--"],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if diff.returncode == 0:
+                changed.update(
+                    path
+                    for path in diff.stdout.splitlines()
+                    if path.endswith(".py") and (root / path).is_file()
+                )
+            break
+    return sorted(changed)
 
 
 def load_config(root: Path) -> dict[str, object]:
@@ -201,6 +237,8 @@ def affected_tests(
         paths = json.loads(result.stdout)
     except (json.JSONDecodeError, TypeError):
         return None, "invalid_output"
+    if isinstance(paths, dict):  # codegraph >= 0.9 wraps the list in an object
+        paths = paths.get("affectedTests")
     if not isinstance(paths, list) or not all(isinstance(path, str) for path in paths):
         return None, "invalid_output"
     if not paths:
@@ -219,6 +257,22 @@ def affected_tests(
         ):
             return None, "invalid_output"
     return paths, "ok"
+
+
+def select_affected(
+    commands: Sequence[Sequence[str]], selected: list[str] | None, reason: str
+) -> tuple[list[list[str]], str]:
+    """Expand ``{affected_tests}``: the affected files, nothing to run when the
+    branch changes no Python, or the whole suite when the selection is unknown."""
+    if selected is not None:
+        expanded = [
+            [arg for part in command for arg in (selected if part == AFFECTED_TESTS else [part])]
+            for command in commands
+        ]
+        return expanded, "affected"
+    if reason == "no_changes":
+        return [list(command) for command in commands if AFFECTED_TESTS not in command], "skipped"
+    return [[part for part in command if part != AFFECTED_TESTS] for command in commands], "full"
 
 
 def expand_command(
@@ -253,17 +307,19 @@ def emit_failure(
     log_path: Path,
     max_bytes: int,
 ) -> None:
+    """Report the end of the log: test runners and linters summarise there."""
     size = log_path.stat().st_size
+    omitted = max(0, size - max_bytes)
     with log_path.open("rb") as stream:
+        stream.seek(omitted)
         diagnostic = stream.read(max_bytes).decode("utf-8", errors="replace").strip()
     print(
         f"GATE_FAILED mode={mode} status={status} command={command[0]}", file=sys.stderr
     )
-    if diagnostic:
-        print(diagnostic, file=sys.stderr)
-    omitted = max(0, size - max_bytes)
     if omitted:
         print(f"[{omitted} bytes omitted]", file=sys.stderr)
+    if diagnostic:
+        print(diagnostic, file=sys.stderr)
     print(f"full_log={log_path}", file=sys.stderr)
 
 
@@ -559,7 +615,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 2
     changed_files = changed_python_files(root) if mode == "fast" else []
-    if configured is None and any(is_default_pytest(command) for command in commands):
+    if any(AFFECTED_TESTS in command for command in commands):
+        selected_tests, test_selection_reason = affected_tests(
+            root, config, branch_python_files(root)
+        )
+        commands, test_selection = select_affected(
+            commands, selected_tests, test_selection_reason
+        )
+        affected_test_count = None if selected_tests is None else len(selected_tests)
+    elif configured is None and any(is_default_pytest(command) for command in commands):
         selected_tests, test_selection_reason = affected_tests(
             root, config, changed_python_files(root)
         )

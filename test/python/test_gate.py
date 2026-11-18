@@ -741,3 +741,93 @@ def test_fast_gate_does_not_write_route_artifacts(tmp_path: Path) -> None:
 
     assert result.returncode == 0
     assert not (tmp_path / ".swarmforge/artifacts/route").exists()
+
+
+def test_affected_selection_reads_the_codegraph_object_output(tmp_path: Path) -> None:
+    env, calls, _ = setup_affected_project(tmp_path)
+    env["SWARMFORGE_TEST_CODEGRAPH_OUTPUT"] = json.dumps(
+        {"changedFiles": ["src/app.py"], "affectedTests": ["test/test_app.py"]}
+    )
+
+    assert gate(tmp_path, "--stop", env).returncode == 0
+    assert calls.read_text().splitlines()[-1] == "pytest:-q test/test_app.py"
+    assert telemetry_events(tmp_path)[0]["test_selection"] == "affected"
+
+
+PLACEHOLDER_CONFIG = (
+    "[commands]\nstop = [['pytest', '-q', '-n', 'auto', '{affected_tests}']]\n"
+)
+
+
+def test_the_placeholder_runs_the_affected_tests_with_the_configured_flags(
+    tmp_path: Path,
+) -> None:
+    env, calls, _ = setup_affected_project(tmp_path, affected_config=PLACEHOLDER_CONFIG)
+
+    assert gate(tmp_path, "--stop", env).returncode == 0
+    assert calls.read_text().splitlines() == [
+        "pytest:-q -n auto test/test_app.py test/helpers_test.py"
+    ]
+    recorded = telemetry_events(tmp_path)[0]
+    assert (recorded["test_selection"], recorded["affected_test_count"]) == ("affected", 2)
+
+
+def test_the_placeholder_runs_the_whole_suite_when_the_selection_is_unknown(
+    tmp_path: Path,
+) -> None:
+    env, calls, _ = setup_affected_project(tmp_path, affected_config=PLACEHOLDER_CONFIG)
+    env["SWARMFORGE_TEST_CODEGRAPH_OUTPUT"] = "not-json"
+
+    assert gate(tmp_path, "--stop", env).returncode == 0
+    assert calls.read_text().splitlines() == ["pytest:-q -n auto"]
+    assert telemetry_events(tmp_path)[0]["test_selection"] == "full"
+
+
+def test_the_placeholder_skips_the_tests_when_the_branch_changes_no_python(
+    tmp_path: Path,
+) -> None:
+    env, calls, _ = setup_affected_project(tmp_path, affected_config=PLACEHOLDER_CONFIG)
+    (tmp_path / "src/app.py").write_text("VALUE = 1\n")
+
+    assert gate(tmp_path, "--stop", env).returncode == 0
+    assert not calls.exists()
+    recorded = telemetry_events(tmp_path)[0]
+    assert (recorded["test_selection"], recorded["test_selection_reason"]) == (
+        "skipped",
+        "no_changes",
+    )
+
+
+def test_the_branch_changes_count_after_they_are_committed(tmp_path: Path) -> None:
+    env, calls, stdin_log = setup_affected_project(
+        tmp_path, affected_config=PLACEHOLDER_CONFIG
+    )
+    upstream = tmp_path.parent / f"{tmp_path.name}-upstream.git"
+    run("git", "init", "-q", "--bare", str(upstream), cwd=tmp_path)
+    run("git", "remote", "add", "origin", str(upstream), cwd=tmp_path)
+    run("git", "push", "-q", "origin", "HEAD:main", cwd=tmp_path)
+    run("git", "fetch", "-q", "origin", cwd=tmp_path)
+    run("git", "commit", "-q", "-am", "change", cwd=tmp_path)
+
+    assert gate(tmp_path, "--stop", env).returncode == 0
+    assert stdin_log.read_text().splitlines() == ["src/app.py"]
+    assert calls.read_text().splitlines() == [
+        "pytest:-q -n auto test/test_app.py test/helpers_test.py"
+    ]
+
+
+def test_failed_gate_shows_the_end_of_the_log(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'sample'\nversion = '0.1.0'\n"
+    )
+    (tmp_path / "swarmforge").mkdir()
+    script = "print('.' * 20000); print('FAILED test_x - boom'); raise SystemExit(1)"
+    (tmp_path / "swarmforge/python-gates.toml").write_text(
+        f"[commands]\nstop = [[{json.dumps(sys.executable)}, '-c', {json.dumps(script)}]]\n"
+    )
+
+    result = gate(tmp_path, "--stop")
+
+    assert result.returncode == 2
+    assert "FAILED test_x - boom" in result.stderr
+    assert result.stderr.index("bytes omitted") < result.stderr.index("FAILED test_x")

@@ -142,7 +142,7 @@ def record_event(
     if event == "gate":
         if gate_failure_count not in {0, 1}:
             return False
-        if test_selection not in {None, "affected", "full"}:
+        if test_selection not in {None, "affected", "full", "skipped"}:
             return False
         if test_selection_reason not in TEST_SELECTION_REASONS | {None}:
             return False
@@ -228,7 +228,7 @@ def _parser() -> argparse.ArgumentParser:
     record.add_argument("--gate-failure-count", type=int)
     record.add_argument("--tool-output-bytes-exposed", type=int)
     record.add_argument("--gate-mode")
-    record.add_argument("--test-selection", choices=["affected", "full"])
+    record.add_argument("--test-selection", choices=["affected", "full", "skipped"])
     record.add_argument(
         "--test-selection-reason", choices=sorted(TEST_SELECTION_REASONS)
     )
