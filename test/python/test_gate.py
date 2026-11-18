@@ -831,3 +831,29 @@ def test_failed_gate_shows_the_end_of_the_log(tmp_path: Path) -> None:
     assert result.returncode == 2
     assert "FAILED test_x - boom" in result.stderr
     assert result.stderr.index("bytes omitted") < result.stderr.index("FAILED test_x")
+
+
+def test_the_import_graph_selects_the_tests_codegraph_cannot_resolve(
+    tmp_path: Path,
+) -> None:
+    env, calls, _ = setup_affected_project(tmp_path, affected_config=PLACEHOLDER_CONFIG)
+    env["SWARMFORGE_TEST_CODEGRAPH_OUTPUT"] = json.dumps({"affectedTests": []})
+    (tmp_path / "test/test_app.py").write_text(
+        "from src.app import VALUE\n\ndef test_app():\n    assert VALUE\n"
+    )
+    run("git", "add", "test/test_app.py", cwd=tmp_path)
+
+    assert gate(tmp_path, "--stop", env).returncode == 0
+    assert calls.read_text().splitlines() == ["pytest:-q -n auto test/test_app.py"]
+    assert telemetry_events(tmp_path)[0]["test_selection_reason"] == "python_imports"
+
+
+def test_a_branch_that_changes_only_data_runs_the_whole_suite(tmp_path: Path) -> None:
+    env, calls, _ = setup_affected_project(tmp_path, affected_config=PLACEHOLDER_CONFIG)
+    (tmp_path / "src/app.py").write_text("VALUE = 1\n")
+    (tmp_path / "pipeline.yaml").write_text("steps: []\n")
+    run("git", "add", "pipeline.yaml", cwd=tmp_path)
+
+    assert gate(tmp_path, "--stop", env).returncode == 0
+    assert calls.read_text().splitlines() == ["pytest:-q -n auto"]
+    assert telemetry_events(tmp_path)[0]["test_selection"] == "full"

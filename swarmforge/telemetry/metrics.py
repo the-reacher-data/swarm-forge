@@ -45,6 +45,7 @@ TEST_SELECTION_REASONS = {
     "timeout",
     "invalid_output",
     "no_tests",
+    "python_imports",
 }
 ROUTES = {"coder", "done", "architect", "security-reviewer"}
 

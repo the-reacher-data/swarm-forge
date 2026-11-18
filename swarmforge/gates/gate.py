@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import ast
+from collections import deque
 from collections.abc import Sequence
 import hashlib
 import importlib.util
@@ -52,57 +54,38 @@ def git_root(cwd: Path) -> Path:
     return Path(result.stdout.strip()) if result.returncode == 0 else cwd
 
 
+def _git_lines(root: Path, command: Sequence[str]) -> list[str]:
+    result = subprocess.run(command, cwd=root, text=True, capture_output=True, check=False)
+    return result.stdout.splitlines() if result.returncode == 0 else []
+
+
+def changed_files(root: Path, *, untracked: bool = True) -> list[str]:
+    """Existing files the working tree and the index change against HEAD."""
+    changed = {
+        *_git_lines(root, ["git", "diff", "--name-only", "--diff-filter=ACMR", "HEAD", "--"]),
+        *_git_lines(root, ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR", "--"]),
+    }
+    if untracked:
+        changed.update(_git_lines(root, ["git", "ls-files", "--others", "--exclude-standard"]))
+    return sorted(path for path in changed if (root / path).is_file())
+
+
 def changed_python_files(root: Path) -> list[str]:
-    commands = (
-        ["git", "diff", "--name-only", "--diff-filter=ACMR", "HEAD", "--"],
-        ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR", "--"],
-        ["git", "ls-files", "--others", "--exclude-standard"],
-    )
-    changed: set[str] = set()
-    for command in commands:
-        result = subprocess.run(
-            command,
-            cwd=root,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        if result.returncode == 0:
-            changed.update(result.stdout.splitlines())
-    return sorted(
-        path for path in changed if path.endswith(".py") and (root / path).is_file()
-    )
+    return [path for path in changed_files(root) if path.endswith(".py")]
 
 
-def branch_python_files(root: Path) -> list[str]:
-    """Python files the branch changes against its upstream, plus the working tree.
+def branch_files(root: Path, *, untracked: bool = True) -> list[str]:
+    """Existing files the branch changes against its upstream, plus the working tree.
 
     Right after a commit the working tree is clean, yet the branch still differs
     from main: those are the changes a stop gate has to test.
     """
-    changed = set(changed_python_files(root))
+    changed = set(changed_files(root, untracked=untracked))
     for ref in UPSTREAM_REFS:
-        base = subprocess.run(
-            ["git", "merge-base", "HEAD", ref],
-            cwd=root,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        if base.returncode == 0 and base.stdout.strip():
-            diff = subprocess.run(
-                ["git", "diff", "--name-only", "--diff-filter=ACMR", base.stdout.strip(), "HEAD", "--"],
-                cwd=root,
-                text=True,
-                capture_output=True,
-                check=False,
-            )
-            if diff.returncode == 0:
-                changed.update(
-                    path
-                    for path in diff.stdout.splitlines()
-                    if path.endswith(".py") and (root / path).is_file()
-                )
+        base = _git_lines(root, ["git", "merge-base", "HEAD", ref])
+        if base:
+            diff = ["git", "diff", "--name-only", "--diff-filter=ACMR", base[0], "HEAD", "--"]
+            changed.update(path for path in _git_lines(root, diff) if (root / path).is_file())
             break
     return sorted(changed)
 
@@ -257,6 +240,96 @@ def affected_tests(
         ):
             return None, "invalid_output"
     return paths, "ok"
+
+
+def is_test_file(path: str) -> bool:
+    name = Path(path).name
+    return (name.startswith("test") and name.endswith(".py")) or name.endswith("_test.py")
+
+
+def _module_names(path: str, roots: Sequence[str]) -> list[str]:
+    """Dotted names a file imports as, from each import root that contains it."""
+    names = []
+    for prefix in roots:
+        if prefix and not path.startswith(prefix + "/"):
+            continue
+        parts = list(Path(path[len(prefix) + 1 :] if prefix else path).with_suffix("").parts)
+        if parts and parts[-1] == "__init__":
+            parts.pop()
+        if parts:
+            names.append(".".join(parts))
+    return names
+
+
+def _imported_modules(path: Path, package: str) -> set[str]:
+    """Every module a file imports, ``from a import b`` also as ``a.b``."""
+    try:
+        tree = ast.parse(path.read_bytes())
+    except (OSError, SyntaxError, ValueError):
+        return set()
+    modules: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            modules.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            base = node.module or ""
+            if node.level:
+                anchor = package.split(".")[: max(0, len(package.split(".")) - node.level + 1)]
+                base = ".".join([*anchor, base] if base else anchor)
+            if base:
+                modules.add(base)
+                modules.update(f"{base}.{alias.name}" for alias in node.names)
+    return modules
+
+
+def python_import_tests(root: Path, changed_files: Sequence[str]) -> list[str]:
+    """Test files that import a changed file, directly or through other modules,
+    plus the changed tests and every test under a changed ``conftest.py``.
+
+    Resolved from the Python ``import`` statements themselves: it needs no index.
+    """
+    listed = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "*.py"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if listed.returncode != 0:
+        return []
+    files = [path for path in listed.stdout.splitlines() if (root / path).is_file()]
+    roots = ["", *(name for name in ("src", "tests", "test") if (root / name).is_dir())]
+    by_module: dict[str, str] = {}
+    for path in files:
+        for module in _module_names(path, roots):
+            by_module.setdefault(module, path)
+    importers: dict[str, set[str]] = {}
+    for path in files:
+        package = _module_names(path, roots[:1])[0]
+        if not path.endswith("__init__.py"):
+            package = package.rpartition(".")[0]
+        for module in _imported_modules(root / path, package):
+            target = by_module.get(module)
+            if target is not None and target != path:
+                importers.setdefault(target, set()).add(path)
+    seen = set(changed_files)
+    queue = deque(changed_files)
+    while queue:
+        for importer in importers.get(queue.popleft(), ()):
+            if importer not in seen:
+                seen.add(importer)
+                queue.append(importer)
+    conftest_dirs = [str(Path(path).parent) for path in seen if Path(path).name == "conftest.py"]
+    selected = {
+        path
+        for path in files
+        if is_test_file(path)
+        and (
+            path in seen
+            or any(folder == "." or path.startswith(folder + "/") for folder in conftest_dirs)
+        )
+    }
+    return sorted(selected)
 
 
 def select_affected(
@@ -616,9 +689,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     changed_files = changed_python_files(root) if mode == "fast" else []
     if any(AFFECTED_TESTS in command for command in commands):
-        selected_tests, test_selection_reason = affected_tests(
-            root, config, branch_python_files(root)
-        )
+        branch_python = [path for path in branch_files(root) if path.endswith(".py")]
+        selected_tests, test_selection_reason = affected_tests(root, config, branch_python)
+        if selected_tests is None and test_selection_reason not in {"no_changes", "disabled"}:
+            by_imports = python_import_tests(root, branch_python)
+            if by_imports:
+                selected_tests, test_selection_reason = by_imports, "python_imports"
+        if test_selection_reason == "no_changes" and branch_files(root, untracked=False):
+            # Data and config files the tests read: no import graph reaches them.
+            test_selection_reason = "no_tests"
         commands, test_selection = select_affected(
             commands, selected_tests, test_selection_reason
         )
